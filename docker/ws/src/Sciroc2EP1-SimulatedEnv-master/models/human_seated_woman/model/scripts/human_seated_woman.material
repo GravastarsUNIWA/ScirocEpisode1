@@ -1,0 +1,14 @@
+material Custom/human_seated_woman
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture Object1.tif
+			}
+		}
+	}
+}
+

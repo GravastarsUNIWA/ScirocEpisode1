@@ -1,0 +1,16 @@
+material Custom/human_seated
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+		    	filtering anistropic
+                max_anisotropy 16
+				texture CMan0317_HD2_O01P01_STD.tga
+			}
+		}
+	}
+}
+
