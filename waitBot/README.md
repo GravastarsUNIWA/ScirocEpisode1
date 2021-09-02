@@ -20,7 +20,7 @@ pip3 install pyttsx3
 python3 -m nltk.downloader punkt
 python3 -m nltk.downloader stopwords
 python3 -m nltk.downloader averaged_perceptron_tagger
----------------------------------------------------------------------------------------------
+
 Structure:
 Topics:
 /waitbot/speech_recognizer  -> custom message you can publish manually with rostopic pub /waitbot/speech_recognizer waitbot/speech_recognizer (press tab to show the message)
