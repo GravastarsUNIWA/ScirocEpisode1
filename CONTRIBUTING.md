@@ -2,6 +2,8 @@
 
 This is the repo for the teams participation in the SciRoc second challenge 2021. Only official team members are currently allowed to contribute.
 
+PantelisPappas
+
 
 # Guidelines for Package Naming
 
