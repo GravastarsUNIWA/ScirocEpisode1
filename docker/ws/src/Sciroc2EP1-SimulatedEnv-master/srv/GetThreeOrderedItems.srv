@@ -1,7 +1,0 @@
-string item0
-string item1
-string item2
----
-#response
-bool success
-string message
