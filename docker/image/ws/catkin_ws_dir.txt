@@ -1,3 +1,0 @@
-This is a sample file that will be copied inside the docker.
-
-All content you put inside this folder will be copied to /home/user/ws inside the docker.

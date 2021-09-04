@@ -8,6 +8,7 @@ import nltk
 import time
 import string
 import random
+import json
 
 from word2number import w2n
 
@@ -532,6 +533,7 @@ def say(phrase):
     #print("Published phrase to topic")
 
 def state_retrieval(pattern):
+    orderList_pub = rospy.Publisher('/waitbot/orderList', String, queue_size=1)
     global previous_state, table_ready_to_be_served, state, substate, isOrdering, time_waiting, timetoSpeak, phraseIsNew, orderList, have_asked
 
     #patterns = [greeting_patterns, order_request_patterns, items_patterns, order_patterns, confirmation_patterns, disagreement_patterns, thanks_patterns, goodbye_patterns]
@@ -610,9 +612,11 @@ def state_retrieval(pattern):
     elif (state == 3):
         if substate == 0:
             substate = 1
+            orderList_pub.publish(json.dumps(orderList))
             say("you have ordered")
             for item in orderList:
                 say(item)
+            orderList = []
         if substate == 1:
             state = 0
             substate = 0
