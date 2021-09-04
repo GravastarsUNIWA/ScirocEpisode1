@@ -32,7 +32,6 @@ class Move(smach.State):
         client.wait_for_server()
         goal = MoveBaseGoal()
         goal.target_pose = location
-        print(self.location_name)
         goal.target_pose.header.stamp = rospy.Time.now()
         client.send_goal(goal)
         client.wait_for_result(rospy.Duration.from_sec(1000.0))
@@ -126,65 +125,51 @@ class TrackItems(smach.State):
         return 'done'
 
 class GetStatus(smach.State):
-    def __init__(self, msg):
+    def __init__(self, location_name, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
         self.table_status_sub = rospy.Subscriber("/table_status/status_per_table", String, self.table_status_callback)
         self.table_status_pub = rospy.Publisher('/table_status/status_per_table', String, queue_size=1)
+        self.all_table_status_pub = rospy.Publisher('/table_status/all_table_status', String, queue_size=1)
+        self.location_name = location_name
+        self.all_table_status = {'{}'.format(self.location_name):[]}
+
 
     def table_status_callback(self, msg):
         self.encoded_table_status = msg.data
         self.table_status = json.loads(self.encoded_table_status)
 
+        
     def execute(self, userdata):
-
         self.human_counter = self.table_status["NoP"]
         self.item_flag = self.table_status["Items"]
 
         if self.human_counter == 0 and self.item_flag == False:
-
             pubPhrase.publish('The table is ready.')
             self.table_status.update({'Status': 'Ready'})
-
-            self.encoded_table_status = json.dumps(self.table_status)
-            self.table_status_pub.publish(self.encoded_table_status)
-
-            # all_table_status['table{}'.format(cnt)] = self.table_status
-
-            return 'done'
-
         elif self.human_counter == 0 and self.item_flag == True:
-
             pubPhrase.publish('The table needs cleaning.')            
             self.table_status.update({'Status': 'Cleaning'})
-
-            # all_table_status['table{}'.format(cnt)] = self.table_status
-
-            return 'done'
-
-
         elif self.human_counter >= 1 and self.item_flag == True:
-            
             pubPhrase.publish('The table is already served')  
             self.table_status.update({'Status': 'Served'})
-            self.encoded_table_status = json.dumps(self.table_status)
-            self.table_status_pub.publish(self.encoded_table_status)
-
-            # all_table_status['table{}'.format(cnt)] = self.table_status
-
-
-
-            return 'done'
-
         else:
             pubPhrase.publish('The table needs serving.')  
             self.table_status.update({'Status': 'Serving'})
-            self.encoded_table_status = json.dumps(self.table_status)
-            self.table_status_pub.publish(self.encoded_table_status)
 
-            # all_table_status['table{}'.format(cnt)] = self.table_status
+        self.table_status_temp = self.table_status
+        self.encoded_table_status = json.dumps(self.table_status)
+        self.table_status_pub.publish(self.encoded_table_status)
 
-            return 'done'
+
+        self.all_table_status.update({'{}'.format(self.location_name): self.table_status_temp})
+
+        self.encoded_all_table_status = json.dumps(self.all_table_status)
+        self.all_table_status_pub.publish(self.encoded_all_table_status)
+
+        return 'done'
+
+        
 
 
 # class GetTableStatus(smach.State):

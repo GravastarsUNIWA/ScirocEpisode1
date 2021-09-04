@@ -50,7 +50,7 @@ def main():
                                TrackItems('Tracking Items'),
                                transitions={'done':'STATUS'})
         smach.StateMachine.add('STATUS',
-                               GetStatus('Getting Table Status'),
+                               GetStatus('table1', 'Getting table status'),
                                transitions={'done':'finished'})
         # smach.StateMachine.add('GETTABLESTATUS_1',
         #                        GetTableStatus('Checking Table 1'),

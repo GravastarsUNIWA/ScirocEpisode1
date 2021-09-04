@@ -107,6 +107,6 @@
     </include>
   </group>
 
-  <node name="tts_engine" pkg="waitbot" type="tts_engine.py" respawn="true" output="screen" />
-  
+<!--   <node name="tts_engine" pkg="waitbot" type="tts_engine.py" respawn="true" output="screen" />
+ -->  
 </launch>
