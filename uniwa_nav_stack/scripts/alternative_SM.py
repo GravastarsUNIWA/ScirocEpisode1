@@ -1,140 +1,36 @@
 #!/usr/bin/env python
 
-import os
 import rospy
-import numpy as np
-import math
-import tf
-import actionlib
 from fix_arena import Fix
-from math import pi
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionFeedback
-from actionlib_msgs.msg import GoalStatus
-from actionlib import GoalStatus
-from nav_msgs.msg import Path
-from nav_msgs.srv import GetPlan
-from tf import TransformListener
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from collections import OrderedDict
-from std_msgs.msg import Float32
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, PointStamped
-from geometry_msgs.msg import Pose, Point, Quaternion
+from std_msgs.msg import String
 import smach
 from smach_ros import SimpleActionState, IntrospectionServer
 from smach import State, StateMachine
-
-from PHASE_1 import Move, Rotate, GetTableStatus, Report
+# from PHASE_1 import Move, Rotate, GetTableStatus, Report
+from PHASE_1 import Move, CountPeople, TrackItems, AnnouncePhaseOne, GetStatus
 from PHASE_3 import Wait, SpawnOrder, ConfirmOrder, CorrectOrder, Pickuporder, Serve
+from coordinates import Coordinates
 
-
-
-
-# points of interest (here only tables)
-home = PoseStamped()
-paso = PoseStamped()
-point1 = PoseStamped()
-point2 = PoseStamped()
-table1 = PoseStamped()
-table2 = PoseStamped()
-table3 = PoseStamped()
-table4 = PoseStamped()
-table5 = PoseStamped()
-table6 = PoseStamped()
-
-client = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-
-
-# initialize coordinates
-def init_locations():
-    seq = 0
-
-    home.header.frame_id = "map"
-    home.header.seq = seq
-    seq += 1
-    home.pose.position.x = -0.368254032203
-    home.pose.position.y = 0.823348215471
-    home.pose.orientation.z = 0.000313931962172
-    home.pose.orientation.w = 0.999999950723
-
-    point1.header.frame_id = "map"
-    point1.header.seq = seq
-    seq += 1
-    point1.pose.position.x = 3.35886874737
-    point1.pose.position.y = 0.324034682627
-    point1.pose.orientation.z = 0.129108324977
-    point1.pose.orientation.w = 0.991630495912
-
-    point2.header.frame_id = "map"
-    point2.header.seq = seq
-    seq += 1
-    point2.pose.position.x = 6.12895165097
-    point2.pose.position.y = 0.36917317753
-    point2.pose.orientation.z = 0.0141001504049
-    point2.pose.orientation.w = 0.999900587938
-
-    paso.header.frame_id = "map"
-    paso.header.seq = seq
-    seq += 1
-    paso.pose.position.x = 0.480344302564
-    paso.pose.position.y = -1.37227130362
-    paso.pose.orientation.z = -0.996678161032
-    paso.pose.orientation.w = 0.0814410420045
-
-    table1.header.frame_id = "map"
-    table1.header.seq = seq
-    seq += 1
-    table1.pose.position.x = 1.85846679197
-    table1.pose.position.y = 0.59230689011
-    table1.pose.orientation.z = 0.633293562507
-    table1.pose.orientation.w = 0.773911664007
-
-    table2.header.frame_id = "map"
-    table2.header.seq = seq
-    seq += 1
-    table2.pose.position.x = 3.23852712217
-    table2.pose.position.y = -0.0306546721319
-    table2.pose.orientation.z = -0.680568825436
-    table2.pose.orientation.w = 0.732684156949
-
-    table3.header.frame_id = "map"
-    table3.header.seq = seq
-    seq += 1
-    table3.pose.position.x = 4.10745675797
-    table3.pose.position.y = 0.737478741019
-    table3.pose.orientation.z = 0.712010659776
-    table3.pose.orientation.w = 0.702168655215
-
-    table4.header.frame_id = "map"
-    table4.header.seq = seq
-    seq += 1
-    table4.pose.position.x = 5.12085210723
-    table4.pose.position.y = -0.192821758167
-    table4.pose.orientation.z = -0.673683316965
-    table4.pose.orientation.w = 0.739020154287
-
-    table5.header.frame_id = "map"
-    table5.header.seq = seq
-    seq += 1
-    table5.pose.position.x = 6.58289493786
-    table5.pose.position.y = 0.928934884087
-    table5.pose.orientation.z = 0.753920508851
-    table5.pose.orientation.w = 0.656965650802
-
-    table6.header.frame_id = "map"
-    table6.header.seq = seq
-    seq += 1
-    table6.pose.position.x = 7.44167327125
-    table6.pose.position.y = 0.186966791119
-    table6.pose.orientation.z = -0.70756013927
-    table6.pose.orientation.w = 0.706653132248
-
+pubPhrase = rospy.Publisher('waitbot/tts/phrase', String, queue_size=5)
 
 # main with state machines
 def main():
+    c = Coordinates()
+    c.init_location()
+    home = c.home
+    paso = c.paso
+    point1 = c.point1
+    point2 = c.point2
+    table1 = c.table1
+    table2 = c.table2
+    table3 = c.table3
+    table4 = c.table4
+    table5 = c.table5
+    table6 = c.table6
     rospy.init_node('smach_example_state_machine')
-    client.wait_for_server()
     print ("init")
-    init_locations()
+    
+    
 
 #=================================================================
 ##PHASE1##
@@ -145,11 +41,17 @@ def main():
     with phase1:
 
         smach.StateMachine.add('TABLE1',
-                               Move(table1), 
+                               Move(table1, 'table1'), 
+                               transitions={'done':'PEOPLE'})
+        smach.StateMachine.add('PEOPLE',
+                               CountPeople('Counting people'),
+                               transitions={'done':'ITEMS'})
+        smach.StateMachine.add('ITEMS',
+                               TrackItems('Tracking Items'),
+                               transitions={'done':'STATUS'})
+        smach.StateMachine.add('STATUS',
+                               GetStatus('Getting Table Status'),
                                transitions={'done':'finished'})
-        # smach.StateMachine.add('ROTATE',
-        #                        Rotate('Rotating'),
-        #                        transitions={'done':'POINT2'})
         # smach.StateMachine.add('GETTABLESTATUS_1',
         #                        GetTableStatus('Checking Table 1'),
         #                        transitions={'done':'TABLE2'})
