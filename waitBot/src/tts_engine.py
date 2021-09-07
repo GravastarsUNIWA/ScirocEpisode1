@@ -36,11 +36,11 @@ def publish_status( isSpeaking):
     # Make the status true if it is speaking and false if it is not
 
     if isSpeaking == True:
-        rospy.sleep(1)
+        rospy.sleep(0.1)
         pubStatus.publish(True)
         print("Published!")#TODO
     else:
-        rospy.sleep(1)
+        rospy.sleep(0.1)
         pubStatus.publish(False)
         print("Published!")#TODO
 
