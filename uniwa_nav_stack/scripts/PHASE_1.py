@@ -9,18 +9,30 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 import smach
 from std_msgs.msg import String, Bool
 import json
+from head import move_head_up, move_head_down, move_head_left, move_head_right
+from PHASE_3 import Wait, SpawnOrder, ConfirmOrder, CorrectOrder, Pickuporder, Serve
 
 all_table_status = {}
 cnt = 1
 
 pubPhrase = rospy.Publisher('waitbot/tts/phrase', String, queue_size=5)
 
+class ShutDown(smach.State):
+    def __init__(self, msg):
+        smach.State.__init__(self, outcomes=['done'])
+        self.msg = msg
+    def shutdown(self):
+        rospy.loginfo("Stopping the robot...")
+        rospy.sleep(1)
+    def execute(self, userdata):
+        rospy.on_shutdown(self.shutdown)
+        return 'done'
 
 # initialize coordinates
 
 # MOVE state to specific location
 class Move(smach.State):
-    def __init__(self, location, location_name, name="default"):
+    def __init__(self, location, location_name='Ignore', name="default"):
         smach.State.__init__(self, outcomes=['done'])
         self.location = location
         self.location_name = location_name
@@ -37,45 +49,29 @@ class Move(smach.State):
         client.wait_for_result(rospy.Duration.from_sec(1000.0))
 
     def execute(self, userdata):
+        os.system('rosservice call /move_base/clear_costmaps')
         pubPhrase.publish("Moving to {}".format(self.location_name))
         self.move(self.location, self.name)
         os.system('rosservice call /move_base/clear_costmaps')
         return 'done'
 
-class MoveCloser(smach.State):
-    def __init__(self, location, name="default"):
-        smach.State.__init__(self, outcomes=['done'])
-        self.location = location
-        self.name = name
-    def move(self, location, name):
-        client = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-        client.wait_for_server()
-        goal = MoveBaseGoal()
-        goal.target_pose = location
-        goal.target_pose.header.stamp = rospy.Time.now()
-        client.send_goal(goal)
-        client.wait_for_result(rospy.Duration.from_sec(1000.0))
-    def execute(self, userdata):
-        self.move(self.location, self.name)
-        os.system('rosservice call /move_base/clear_costmaps')
-        return 'done'
 
-class Rotate(smach.State):
-    def __init__(self, msg):
-        smach.State.__init__(self, outcomes=['done'])
-        self.msg = msg
-        self.start_time = time.time()
-    def execute(self, userdata):
-        f = Fix()
-        start_time = time.time()
-        seconds = 10
-        while True:
-            current_time = time.time()
-            elapsed_time = current_time - start_time
-            f.rotation()
-            if elapsed_time > seconds:
-                break
-        return 'done'
+# class Rotate(smach.State):
+#     def __init__(self, msg):
+#         smach.State.__init__(self, outcomes=['done'])
+#         self.msg = msg
+#         self.start_time = time.time()
+#     def execute(self, userdata):
+#         f = Fix()
+#         start_time = time.time()
+#         seconds = 10
+#         while True:
+#             current_time = time.time()
+#             elapsed_time = current_time - start_time
+#             f.rotation()
+#             if elapsed_time > seconds:
+#                 break
+#         return 'done'
 
 class CountPeople(smach.State):
     def __init__(self, msg):
@@ -89,13 +85,51 @@ class CountPeople(smach.State):
         self.human_counter = int(msg.data)
 
     def execute(self, userdata):
-        pubPhrase.publish('Couting People')
-        rospy.sleep(3)
+        pubPhrase.publish('Counting People')
+        rospy.sleep(1)
+        # ------------ under construction -------------
+        if self.human_counter:
+            self.human_counter = 1
+        else:
+            self.human_counter = 0
+        temp = self.human_counter
         self.table_status.update({'NoP' : self.human_counter})
-        self.encoded_table_status = json.dumps(self.table_status)
-        self.table_status_pub.publish(self.encoded_table_status)
-        
-        # global all_table_status, cnt
+
+        self.head_movement_right = smach.StateMachine(outcomes=['finished'])
+        with self.head_movement_right:
+            smach.StateMachine.add('RIGHT',
+                                   move_head_right('look right'),
+                                   transitions={'done':'WAIT'})
+            smach.StateMachine.add('WAIT',
+                                   Wait('wait'),
+                                   transitions={'done':'finished'})
+            outcome_RIGHT = self.head_movement_right.execute()
+            pubPhrase.publish('Counting People')
+            rospy.sleep(1)
+            if self.human_counter > 1:
+                self.human_counter = self.human_counter - temp
+            self.table_status['NoP'] += self.human_counter
+
+        self.head_movement_left = smach.StateMachine(outcomes=['finished'])
+        with self.head_movement_left:
+            smach.StateMachine.add('LEFT',
+                                   move_head_left('look right'),
+                                   transitions={'done':'WAIT'})
+            smach.StateMachine.add('WAIT',
+                                   Wait('wait'),
+                                   transitions={'done':'finished'})
+            outcome_LEFT = self.head_movement_left.execute()
+            pubPhrase.publish('Counting People')
+            rospy.sleep(1)
+            if self.human_counter > 1:
+                self.human_counter = self.human_counter - temp
+            self.table_status['NoP'] += self.human_counter
+            # ------------ under construction -------------
+
+
+            self.encoded_table_status = json.dumps(self.table_status)
+            self.table_status_pub.publish(self.encoded_table_status)
+
 
         return 'done'
 
@@ -139,7 +173,7 @@ class GetStatus(smach.State):
         self.encoded_table_status = msg.data
         self.table_status = json.loads(self.encoded_table_status)
 
-        
+
     def execute(self, userdata):
         self.human_counter = self.table_status["NoP"]
         self.item_flag = self.table_status["Items"]
@@ -148,13 +182,13 @@ class GetStatus(smach.State):
             pubPhrase.publish('The table is ready.')
             self.table_status.update({'Status': 'Ready'})
         elif self.human_counter == 0 and self.item_flag == True:
-            pubPhrase.publish('The table needs cleaning.')            
+            pubPhrase.publish('The table needs cleaning.')
             self.table_status.update({'Status': 'Cleaning'})
         elif self.human_counter >= 1 and self.item_flag == True:
-            pubPhrase.publish('The table is already served')  
+            pubPhrase.publish('The table is already served')
             self.table_status.update({'Status': 'Served'})
         else:
-            pubPhrase.publish('The table needs serving.')  
+            pubPhrase.publish('The table needs serving.')
             self.table_status.update({'Status': 'Serving'})
 
         self.table_status_temp = self.table_status
@@ -169,7 +203,7 @@ class GetStatus(smach.State):
 
         return 'done'
 
-        
+
 
 
 # class GetTableStatus(smach.State):
