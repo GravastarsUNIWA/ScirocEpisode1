@@ -75,4 +75,8 @@ RUN bash -c "source /opt/pal/ferrum/setup.bash \
     # Add below line to automatically source your packages
     # && echo 'source $REPO_WS/devel/setup.bash' >> ~/.bashrc
 
+WORKDIR /home/user/ws/src
+RUN git clone https://github.com/GravastarsUNIWA/ScirocEpisode1.git
+RUN git checkout docker-branch
+RUN bash -c "cd /home/user/ws && catkin build && source /home/user/ws/devel/setup.bash"
 ENTRYPOINT ["bash"]
