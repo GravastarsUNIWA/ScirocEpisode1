@@ -4,6 +4,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, PointStamp
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 
+
 class Coordinates():
     def __init__(self):
         self.home = PoseStamped()
@@ -15,6 +16,17 @@ class Coordinates():
         self.table4 = PoseStamped()
         self.table5 = PoseStamped()
         self.table6 = PoseStamped()
+
+        self.table1_walk = PoseStamped()
+        self.table2_walk = PoseStamped()
+        self.table3_walk = PoseStamped()
+        self.table4_walk = PoseStamped()
+        self.table5_walk = PoseStamped()
+        self.table6_walk = PoseStamped()
+
+        self.check456 = PoseStamped()
+        self.check123 = PoseStamped()
+
         # self.table1_close = PoseStamped()
         # self.table2_close = PoseStamped()
         # self.table3_close = PoseStamped()
@@ -40,6 +52,18 @@ class Coordinates():
         self.paso.pose.position.y = -1.50000389738
         self.paso.pose.orientation.z = -0.999871381845
         self.paso.pose.orientation.w = 0.0160380724049
+
+        # self.check456.header.frame_id = "map"
+        # self.check456.pose.position.x = 6.42291343313
+        # self.check456.pose.position.y = 0.560197763387
+        # self.check456.pose.orientation.z = -0.476521284588
+        # self.check456.pose.orientation.w = 0.879162934464
+        #
+        # self.check123.header.frame_id = "map"
+        # self.check123.pose.position.x = 0.809605985728
+        # self.check123.pose.position.y = -1.50000389738
+        # self.check123.pose.orientation.z = -0.999871381845
+        # self.check123.pose.orientation.w = 0.0160380724049
 
         self.table1.header.frame_id = "map"
         self.table1.pose.position.x = 1.76306789749
@@ -77,6 +101,43 @@ class Coordinates():
         self.table6.pose.position.y = 0.104594721278
         self.table6.pose.orientation.z = -0.70111048581
         self.table6.pose.orientation.w = 0.713052653516
+# ---------------------------------------------------------------
+
+        self.table1_walk.header.frame_id = "map"
+        self.table1_walk.pose.position.x = 1.14804641842
+        self.table1_walk.pose.position.y = -0.446458449757
+        self.table1_walk.pose.orientation.z = 0.224081398612
+        self.table1_walk.pose.orientation.w = 0.974570431932
+
+        self.table2_walk.header.frame_id = "map"
+        self.table2_walk.pose.position.x = 3.91207566295
+        self.table2_walk.pose.position.y = 0.501907059278
+        self.table2_walk.pose.orientation.z = -0.999745632367
+        self.table2_walk.pose.orientation.w = 0.0225537261307
+
+        self.table3_walk.header.frame_id = "map"
+        self.table3_walk.pose.position.x = 3.65146318495
+        self.table3_walk.pose.position.y = 0.0855626319331
+        self.table3_walk.pose.orientation.z = 0.0519814727958
+        self.table3_walk.pose.orientation.w = 0.998648049358
+
+        self.table4_walk.header.frame_id = "map"
+        self.table4_walk.pose.position.x = 5.78267488038
+        self.table4_walk.pose.position.y = 0.591859940023
+        self.table4_walk.pose.orientation.z = -0.999865831257
+        self.table4_walk.pose.orientation.w = 0.0163804604666
+
+        self.table5_walk.header.frame_id = "map"
+        self.table5_walk.pose.position.x = 5.40488573868
+        self.table5_walk.pose.position.y = 0.255674939855
+        self.table5_walk.pose.orientation.z = -0.0169001818853
+        self.table5_walk.pose.orientation.w = 0.999857181728
+
+        self.table6_walk.header.frame_id = "map"
+        self.table6_walk.pose.position.x = 7.83246841936
+        self.table6_walk.pose.position.y = 0.636383742723
+        self.table6_walk.pose.orientation.z = -0.997657808928
+        self.table6_walk.pose.orientation.w = 0.0684024581833
 
     # def init_location_close(self):
     #     self.table1_close.header.frame_id = "map"

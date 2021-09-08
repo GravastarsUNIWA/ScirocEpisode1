@@ -9,11 +9,9 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 import smach
 from std_msgs.msg import String, Bool
 import json
-from head import move_head_up, move_head_down, move_head_left, move_head_right
-from PHASE_3 import Wait, SpawnOrder, ConfirmOrder, CorrectOrder, Pickuporder, Serve
-
-all_table_status = {}
-cnt = 1
+from head import move_head_up
+import time
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 pubPhrase = rospy.Publisher('waitbot/tts/phrase', String, queue_size=5)
 
@@ -28,9 +26,6 @@ class ShutDown(smach.State):
         rospy.on_shutdown(self.shutdown)
         return 'done'
 
-# initialize coordinates
-
-# MOVE state to specific location
 class Move(smach.State):
     def __init__(self, location, location_name='Ignore', name="default"):
         smach.State.__init__(self, outcomes=['done'])
@@ -55,24 +50,6 @@ class Move(smach.State):
         os.system('rosservice call /move_base/clear_costmaps')
         return 'done'
 
-
-# class Rotate(smach.State):
-#     def __init__(self, msg):
-#         smach.State.__init__(self, outcomes=['done'])
-#         self.msg = msg
-#         self.start_time = time.time()
-#     def execute(self, userdata):
-#         f = Fix()
-#         start_time = time.time()
-#         seconds = 10
-#         while True:
-#             current_time = time.time()
-#             elapsed_time = current_time - start_time
-#             f.rotation()
-#             if elapsed_time > seconds:
-#                 break
-#         return 'done'
-
 class CountPeople(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
@@ -86,50 +63,10 @@ class CountPeople(smach.State):
 
     def execute(self, userdata):
         pubPhrase.publish('Counting People')
-        rospy.sleep(1)
-        # ------------ under construction -------------
-        if self.human_counter:
-            self.human_counter = 1
-        else:
-            self.human_counter = 0
-        temp = self.human_counter
+        rospy.sleep(3)
         self.table_status.update({'NoP' : self.human_counter})
-
-        self.head_movement_right = smach.StateMachine(outcomes=['finished'])
-        with self.head_movement_right:
-            smach.StateMachine.add('RIGHT',
-                                   move_head_right('look right'),
-                                   transitions={'done':'WAIT'})
-            smach.StateMachine.add('WAIT',
-                                   Wait('wait'),
-                                   transitions={'done':'finished'})
-            outcome_RIGHT = self.head_movement_right.execute()
-            pubPhrase.publish('Counting People')
-            rospy.sleep(1)
-            if self.human_counter > 1:
-                self.human_counter = self.human_counter - temp
-            self.table_status['NoP'] += self.human_counter
-
-        self.head_movement_left = smach.StateMachine(outcomes=['finished'])
-        with self.head_movement_left:
-            smach.StateMachine.add('LEFT',
-                                   move_head_left('look right'),
-                                   transitions={'done':'WAIT'})
-            smach.StateMachine.add('WAIT',
-                                   Wait('wait'),
-                                   transitions={'done':'finished'})
-            outcome_LEFT = self.head_movement_left.execute()
-            pubPhrase.publish('Counting People')
-            rospy.sleep(1)
-            if self.human_counter > 1:
-                self.human_counter = self.human_counter - temp
-            self.table_status['NoP'] += self.human_counter
-            # ------------ under construction -------------
-
-
-            self.encoded_table_status = json.dumps(self.table_status)
-            self.table_status_pub.publish(self.encoded_table_status)
-
+        self.encoded_table_status = json.dumps(self.table_status)
+        self.table_status_pub.publish(self.encoded_table_status)
 
         return 'done'
 
@@ -159,15 +96,19 @@ class TrackItems(smach.State):
         return 'done'
 
 class GetStatus(smach.State):
-    def __init__(self, location_name, msg):
+    def __init__(self, location_name, tablestring):
         smach.State.__init__(self, outcomes=['done'])
-        self.msg = msg
+        self.tablestring = tablestring
         self.table_status_sub = rospy.Subscriber("/table_status/status_per_table", String, self.table_status_callback)
         self.table_status_pub = rospy.Publisher('/table_status/status_per_table', String, queue_size=1)
         self.all_table_status_pub = rospy.Publisher('/table_status/all_table_status', String, queue_size=1)
+        self.all_table_status_sub = rospy.Subscriber('/table_status/all_table_status', String, self.all_table_status_callback)
+
         self.location_name = location_name
         self.all_table_status = {'{}'.format(self.location_name):[]}
 
+    def all_table_status_callback(self,msg):
+        self.all_table_status = json.loads(msg.data)
 
     def table_status_callback(self, msg):
         self.encoded_table_status = msg.data
@@ -196,104 +137,13 @@ class GetStatus(smach.State):
         self.table_status_pub.publish(self.encoded_table_status)
 
 
-        self.all_table_status.update({'{}'.format(self.location_name): self.table_status_temp})
+        # self.all_table_status.update({'{}'.format(self.location_name): self.table_status_temp})
+        self.all_table_status['{}'.format(self.location_name)]=self.table_status_temp
 
         self.encoded_all_table_status = json.dumps(self.all_table_status)
         self.all_table_status_pub.publish(self.encoded_all_table_status)
 
         return 'done'
-
-
-
-
-# class GetTableStatus(smach.State):
-#     def __init__(self, msg):
-#         smach.State.__init__(self, outcomes=['done'])
-#         self.msg = msg
-#         self.table_status = {"Items":[], "NoP":[], "Status":[]}
-#         self.human_counter_sub = rospy.Subscriber("/object_detection/people_counter", String, self.people_counter_callback)
-#         self.isFood_sub = rospy.Subscriber("/object_detection/isFood", Bool, self.isFood_callback)
-#         self.total_customers = rospy.Publisher('/total_customers_topic', String, queue_size=1)
-#         self.total = 0
-
-#     def people_counter_callback(self, msg):
-#         self.human_counter = int(msg.data)
-#     def isFood_callback(self, msg):
-#         self.item_flag = msg.data
-
-#     def execute(self, userdata):
-#         rospy.loginfo('check the table')
-#         global all_table_status, cnt
-
-#         print(self.item_flag)
-
-#         if self.human_counter == 0 and self.item_flag == False:
-#             self.status = 'Ready'
-#             self.table_status.update({"Items" : self.item_flag})
-#             self.table_status.update({'NoP' : self.human_counter})
-#             self.table_status.update({'Status': self.status})
-
-#             all_table_status['table{}'.format(cnt)] = self.table_status
-
-#             # all_table_status['table{}'.format(i)] = self.table_status #TODO
-
-#             print('Ready to accept new customers') # speech announcement
-
-#             print(all_table_status)
-
-#             cnt+=1
-#             return 'done'
-
-#         elif self.human_counter == 0 and self.item_flag == True:
-#             self.status = 'Cleaning'
-#             self.table_status.update({"Items" : self.item_flag})
-#             self.table_status.update({'NoP' : self.human_counter})
-#             self.table_status.update({'Status': self.status})
-
-#             all_table_status['table{}'.format(cnt)] = self.table_status
-
-#             print('Needs cleaning') # speech announcement
-
-#             cnt+=1
-#             print(all_table_status)
-#             return 'done'
-
-
-#         elif self.human_counter >= 1 and self.item_flag == True:
-#             self.status = 'Served'
-#             self.table_status.update({"Items" : self.item_flag})
-#             self.table_status.update({'NoP' : self.human_counter})
-#             self.table_status.update({'Status': self.status})
-
-#             all_table_status['table{}'.format(cnt)] = self.table_status
-
-#             print('Number of humans at the table', self.human_counter)
-#             print('Already served') # speech announcement
-
-#             cnt+=1
-#             print(all_table_status)
-
-#             self.total+=self.human_counter
-#             self.total_customers.publish(str(self.total))
-#             return 'done'
-
-#         else:
-#             self.status = 'Serving'
-#             self.table_status.update({"Items" : self.item_flag})
-#             self.table_status.update({'NoP' : self.human_counter})
-#             self.table_status.update({'Status': self.status})
-
-#             all_table_status['table{}'.format(cnt)] = self.table_status
-
-#             print('Number of humans at the table', self.human_counter)
-#             print('Needs serving') # speech announcement
-
-
-#             cnt+=1
-#             print(all_table_status)
-#             self.total+=self.human_counter
-#             self.total_customers.publish(str(self.total))
-#             return 'done'
 
 class Report(smach.State):
     def __init__(self, msg):

@@ -2,12 +2,11 @@
 
 import rospy
 from std_msgs.msg import String
-# from uniwa_nav_stack.msg import string_array
-import json
+from uniwa_nav_stack.msg import string_array
 
 
 def talker():
-    pub = rospy.Publisher('order_publisher', String, queue_size=10)
+    pub = rospy.Publisher('order_publisher', string_array, queue_size=10)
     rospy.init_node('order_publisher_node', anonymous=True)
     rate = rospy.Rate(10) # 10hz
 
@@ -19,13 +18,11 @@ def talker():
 
     order = [item1, item2, item3]
 
-    encoded_order = json.dumps(order)
-
 
     while not rospy.is_shutdown():
 
         rospy.loginfo(order)
-        pub.publish(encoded_order)
+        pub.publish(order)
         rate.sleep()
 
 if __name__ == '__main__':
