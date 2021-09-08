@@ -43,11 +43,11 @@ class ObjectDetector:
         img = img.reshape((msg.height, msg.width, 3))    
         
         # crop edges from 640x480 to 480x480
-        if img.shape[0] != 480 or img.shape[1] != 640:
-            img = cv2.resize((640,480), img)
-        img = img[:,80:560,:]
+        #if img.shape[0] != 480 or img.shape[1] != 640:
+            #img = cv2.resize((640,480), img)
+        #img = img[:,80:560,:]
         
-        results = self.model(img, size=480)
+        results = self.model(img, size=640)
 
         detections = results.tolist()[0].xyxy
 
