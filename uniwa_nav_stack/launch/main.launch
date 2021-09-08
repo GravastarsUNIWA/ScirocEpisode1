@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find uniwa_nav_stack)/launch/tiago_ep1_navigation.launch" />
+    <include file="$(find waitbot)/launch/waitbot.launch"/>
+    <include file="$(find ros_yolov5)/launch/ros_yolov5.launch"/>
+    <node name="alternative_SM" pkg="uniwa_nav_stack" type="alternative_SM.py" respawn="false" output="screen" />
+</launch>
