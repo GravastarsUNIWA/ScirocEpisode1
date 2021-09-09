@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="scan" default="rgbd_scan"/>
+  <arg name="laser_model" default="rgbd_scan"/>
+  <include file="$(find slam_toolbox)/online_sync.launch"/>
+  <rosparam file="$(find pal_navigation_cfg_ari)/config/mapping/slam_toolbox.yaml" command="load"/>
+</launch>

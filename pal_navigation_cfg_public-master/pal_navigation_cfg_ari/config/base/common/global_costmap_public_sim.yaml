@@ -1,0 +1,85 @@
+# Independent settings for the planner's costmap
+global_costmap:
+  global_frame    : map
+  robot_base_frame: base_footprint
+
+  update_frequency : 5.0
+  publish_frequency: 1.0
+
+  track_unknown_space: true
+  unknown_cost_value : 255
+
+  robot_radius: 0.23
+
+  #plugins are loaded on a separate file
+
+  static_layer:
+    enabled  : true
+    map_topic: map
+
+  obstacle_vo_layer:
+    enabled: true
+    observation_sources: vo_cloud
+    combination_method: 1
+
+    vo_cloud:
+      sensor_frame: base_link
+      data_type: PointCloud
+      topic: vo_cloud
+      expected_update_rate: 12.0
+      observation_persistence: 0.0
+      marking: true
+      clearing: false
+      raytrace_range: 1.0
+      obstacle_range: 15.0
+
+  stvl_rgbd_layer:
+    enabled:               true
+    voxel_decay:           20       # seconds if linear, e^n if exponential
+    decay_model:           0        # 0=linear, 1=exponential, -1=persistent
+    voxel_size:            0.02     # meters
+    track_unknown_space:   true     # keeps info on unknown
+    observation_persistence: 0.0    # seconds
+    max_obstacle_height:   2.0      # meters
+    unknown_threshold:     0        # voxel height
+    mark_threshold:        0        # voxel height
+    update_footprint_enabled: false
+    combination_method:    1        # 1=max, 0=override
+    obstacle_range:        3.0      # meters
+    origin_z:              0.0      # meters
+    publish_voxel_map:     false    # default off
+    transform_tolerance:   0.2      # seconds
+    mapping_mode:          false    # default off, saves map not for navigation
+    map_save_duration:     60       #default 60s, how often to autosave
+    observation_sources:   rgbd_base_clear rgbd_base_mark
+    rgbd_base_mark:
+      data_type: PointCloud2
+      topic: /torso_front_camera/depth/color/points
+      sensor_frame: torso_front_camera_depth_optical_frame
+      marking: true
+      clearing: false
+      min_obstacle_height: 0.05     # default 0, meters
+      max_obstacle_height: 2.0      # default 3, meters
+      expected_update_rate: 0.4     # default 0, if not updating at this rate at least, remove from buffer
+      observation_persistence: 0.0  # default 0, use all measurements taken during now-value, 0=latest 
+      vertical_fov_angle: 1.01      # default 0.7, radians
+      horizontal_fov_angle: 1.52    # default 1.04, radians
+      voxel_filter: on              # default off, apply voxel filter to sensor, recommend on
+      clear_after_reading: true     # default false, clear the buffer after the layer gets readings from it
+    rgbd_base_clear:
+      data_type: PointCloud2
+      topic: /torso_front_camera/depth/color/points
+      sensor_frame: torso_front_camera_depth_optical_frame
+      marking: false
+      clearing: true
+      min_z: 0.105                  # default 0, meters
+      max_z: 3.0                    # default 10, meters
+      vertical_fov_angle: 1.01      # default 0.7, radians
+      horizontal_fov_angle: 1.52    # default 1.04, radians
+      decay_acceleration: 100000    # default 0, 1/s^2. If laser scanner MUST be 0
+      voxel_filter: true            # default off, apply voxel filter to sensor, recommend on
+
+  inflation_layer:
+    enabled            : true
+    inflation_radius   : 0.5
+    cost_scaling_factor: 25.0

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="scan" default="rgbd_scan"/>
+  <arg name="laser_model" default="rgbd_scan"/>
+
+  <arg name="trajectory_file" default="$(env HOME)/.pal/trajectory.yaml"/>
+
+  <include file="$(find pal_karto)/launch/karto.launch">
+    <arg name="scan" value="$(arg scan)"/>
+    <arg name="trajectory_file" value="$(arg trajectory_file)"/>
+  </include>
+
+  <rosparam file="$(find pal_navigation_cfg_ari)/config/mapping/karto_$(arg laser_model).yaml" command="load"/>
+
+</launch>
