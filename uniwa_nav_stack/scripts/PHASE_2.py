@@ -87,8 +87,8 @@ class GetSpeechOrder(smach.State):
         self.order_pub = rospy.Publisher('/table_status/ready', Bool, queue_size=1)
 
         # adi gia auto ftiakse sub kai callback kai apo8hkeuse str st table_status
-        self.order_list = ["cocacola", "cocacola",'sprite']
-        # self.order_list = []
+        # self.order_list = ["cocacola", "cocacola",'sprite']
+        self.order_list = []
 
 
 

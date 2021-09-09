@@ -42,29 +42,29 @@ def main():
     #=================================================================
     with phase1:
 
-        # smach.StateMachine.add('VIEW1',
-        #                        move_head_left1('rotate head'),
-        #                        transitions={'done':'WAIT0'})
-        # smach.StateMachine.add('WAIT0',
-        #                        Wait('resting'),
-        #                         transitions={'done':'TABLE1'})
+        smach.StateMachine.add('VIEW1',
+                               move_head_left1('rotate head'),
+                               transitions={'done':'WAIT0'})
+        smach.StateMachine.add('WAIT0',
+                               Wait('resting'),
+                                transitions={'done':'TABLE1'})
 
-        # # -------------------------- 1 -----------------------------
-        # smach.StateMachine.add('TABLE1',
-        #                        Move(table1_walk, 'table1'),
-        #                        transitions={'done':'WAIT1'})
-        # smach.StateMachine.add('WAIT1',
-        #                        Wait('resting'),
-        #                         transitions={'done':'PEOPLE1'})
-        # smach.StateMachine.add('PEOPLE1',
-        #                        CountPeople('Counting People'),
-        #                        transitions={'done':'ITEMS1'})
-        # smach.StateMachine.add('ITEMS1',
-        #                        TrackItems('Tracking Items'),
-        #                        transitions={'done':'STATUS1'})
-        # smach.StateMachine.add('STATUS1',
-        #                        GetStatus('table1', 'Getting table status'),
-        #                        transitions={'done':'VIEW3'})
+        # -------------------------- 1 -----------------------------
+        smach.StateMachine.add('TABLE1',
+                               Move(table1_walk, 'table1'),
+                               transitions={'done':'WAIT1'})
+        smach.StateMachine.add('WAIT1',
+                               Wait('resting'),
+                                transitions={'done':'PEOPLE1'})
+        smach.StateMachine.add('PEOPLE1',
+                               CountPeople('Counting People'),
+                               transitions={'done':'ITEMS1'})
+        smach.StateMachine.add('ITEMS1',
+                               TrackItems('Tracking Items'),
+                               transitions={'done':'STATUS1'})
+        smach.StateMachine.add('STATUS1',
+                               GetStatus('table1', 'Getting table status'),
+                               transitions={'done':'VIEW3'})
 
     # -------------------------- 3 -----------------------------
         smach.StateMachine.add('VIEW3',
@@ -84,90 +84,90 @@ def main():
                                transitions={'done':'STATUS3'})
         smach.StateMachine.add('STATUS3',
                                GetStatus('table3', 'Getting table status'),
-                               transitions={'done':'VIEWHOME'}) #VIEW5
+                               transitions={'done':'VIEW5'}) #VIEW5
 
     # -------------------------- 5 -----------------------------
-    #     smach.StateMachine.add('VIEW5',
-    #                            move_head_left1('rotate head'),
-    #                            transitions={'done':'TABLE5'})
-    #     smach.StateMachine.add('TABLE5',
-    #                            Move(table5_walk, 'table5'),
-    #                            transitions={'done':'WAIT5'})
-    #     smach.StateMachine.add('WAIT5',
-    #                            Wait('resting'),
-    #                            transitions={'done':'PEOPLE5'})
-    #     smach.StateMachine.add('PEOPLE5',
-    #                            CountPeople('Counting People'),
-    #                            transitions={'done':'ITEMS5'})
-    #     smach.StateMachine.add('ITEMS5',
-    #                            TrackItems('Tracking Items'),
-    #                            transitions={'done':'STATUS5'})
-    #     smach.StateMachine.add('STATUS5',
-    #                            GetStatus('table5', 'Getting table status'),
-    #                            transitions={'done':'VIEW6'})
+        smach.StateMachine.add('VIEW5',
+                               move_head_left1('rotate head'),
+                               transitions={'done':'TABLE5'})
+        smach.StateMachine.add('TABLE5',
+                               Move(table5_walk, 'table5'),
+                               transitions={'done':'WAIT5'})
+        smach.StateMachine.add('WAIT5',
+                               Wait('resting'),
+                               transitions={'done':'PEOPLE5'})
+        smach.StateMachine.add('PEOPLE5',
+                               CountPeople('Counting People'),
+                               transitions={'done':'ITEMS5'})
+        smach.StateMachine.add('ITEMS5',
+                               TrackItems('Tracking Items'),
+                               transitions={'done':'STATUS5'})
+        smach.StateMachine.add('STATUS5',
+                               GetStatus('table5', 'Getting table status'),
+                               transitions={'done':'VIEW6'})
 
-    # # -------------------------- 6 -----------------------------
-    #     smach.StateMachine.add('VIEW6',
-    #                            move_head_left346('rotate head'),
-    #                            transitions={'done':'TABLE6'})
-    #     smach.StateMachine.add('TABLE6',
-    #                            Move(table6_walk, 'table6'),
-    #                            transitions={'done':'WAIT6'})
-    #     smach.StateMachine.add('WAIT6',
-    #                            Wait('resting'),
-    #                            transitions={'done':'PEOPLE6'})
-    #     smach.StateMachine.add('PEOPLE6',
-    #                            CountPeople('Counting People'),
-    #                            transitions={'done':'ITEMS6'})
-    #     smach.StateMachine.add('ITEMS6',
-    #                            TrackItems('Tracking Items'),
-    #                            transitions={'done':'STATUS6'})
-    #     smach.StateMachine.add('STATUS6',
-    #                            GetStatus('table6', 'Getting table status'),
-    #                            transitions={'done':'VIEW4'})
+    # -------------------------- 6 -----------------------------
+        smach.StateMachine.add('VIEW6',
+                               move_head_left346('rotate head'),
+                               transitions={'done':'TABLE6'})
+        smach.StateMachine.add('TABLE6',
+                               Move(table6_walk, 'table6'),
+                               transitions={'done':'WAIT6'})
+        smach.StateMachine.add('WAIT6',
+                               Wait('resting'),
+                               transitions={'done':'PEOPLE6'})
+        smach.StateMachine.add('PEOPLE6',
+                               CountPeople('Counting People'),
+                               transitions={'done':'ITEMS6'})
+        smach.StateMachine.add('ITEMS6',
+                               TrackItems('Tracking Items'),
+                               transitions={'done':'STATUS6'})
+        smach.StateMachine.add('STATUS6',
+                               GetStatus('table6', 'Getting table status'),
+                               transitions={'done':'VIEW4'})
 
-    # # -------------------------- 4 -----------------------------
-    #     smach.StateMachine.add('VIEW4',
-    #                            move_head_left346('rotate head'),
-    #                            transitions={'done':'TABLE4'})
-    #     smach.StateMachine.add('TABLE4',
-    #                            Move(table4_walk, 'table4'),
-    #                            transitions={'done':'WAIT4'})
-    #     smach.StateMachine.add('WAIT4',
-    #                            Wait('resting'),
-    #                            transitions={'done':'PEOPLE4'})
-    #     smach.StateMachine.add('PEOPLE4',
-    #                            CountPeople('Counting People'),
-    #                            transitions={'done':'ITEMS4'})
-    #     smach.StateMachine.add('ITEMS4',
-    #                            TrackItems('Tracking Items'),
-    #                            transitions={'done':'STATUS4'})
-    #     smach.StateMachine.add('STATUS4',
-    #                            GetStatus('table4', 'Getting table status'),
-    #                            transitions={'done':'VIEW2'})
+    # -------------------------- 4 -----------------------------
+        smach.StateMachine.add('VIEW4',
+                               move_head_left346('rotate head'),
+                               transitions={'done':'TABLE4'})
+        smach.StateMachine.add('TABLE4',
+                               Move(table4_walk, 'table4'),
+                               transitions={'done':'WAIT4'})
+        smach.StateMachine.add('WAIT4',
+                               Wait('resting'),
+                               transitions={'done':'PEOPLE4'})
+        smach.StateMachine.add('PEOPLE4',
+                               CountPeople('Counting People'),
+                               transitions={'done':'ITEMS4'})
+        smach.StateMachine.add('ITEMS4',
+                               TrackItems('Tracking Items'),
+                               transitions={'done':'STATUS4'})
+        smach.StateMachine.add('STATUS4',
+                               GetStatus('table4', 'Getting table status'),
+                               transitions={'done':'VIEW2'})
 
-    # # -------------------------- 2 -----------------------------
-    #     smach.StateMachine.add('VIEW2',
-    #                            move_head_left2('rotate head'),
-    #                            transitions={'done':'TABLE2'})
-    #     smach.StateMachine.add('TABLE2',
-    #                            Move(table2_walk, 'table2'),
-    #                            transitions={'done':'WAIT2'})
-    #     smach.StateMachine.add('WAIT2',
-    #                            Wait('resting'),
-    #                            transitions={'done':'PEOPLE2'})
-    #     smach.StateMachine.add('PEOPLE2',
-    #                            CountPeople('Counting People'),
-    #                            transitions={'done':'ITEMS2'})
-    #     smach.StateMachine.add('ITEMS2',
-    #                            TrackItems('Tracking Items'),
-    #                            transitions={'done':'STATUS2'})
-    #     smach.StateMachine.add('STATUS2',
-    #                            GetStatus('table2', 'Getting table status'),
-    #                            transitions={'done':'HOME'})
-    #     smach.StateMachine.add('HOME',
-    #                            Move(home, 'home'),
-    #                            transitions={'done':'VIEWHOME'})
+    # -------------------------- 2 -----------------------------
+        smach.StateMachine.add('VIEW2',
+                               move_head_left2('rotate head'),
+                               transitions={'done':'TABLE2'})
+        smach.StateMachine.add('TABLE2',
+                               Move(table2_walk, 'table2'),
+                               transitions={'done':'WAIT2'})
+        smach.StateMachine.add('WAIT2',
+                               Wait('resting'),
+                               transitions={'done':'PEOPLE2'})
+        smach.StateMachine.add('PEOPLE2',
+                               CountPeople('Counting People'),
+                               transitions={'done':'ITEMS2'})
+        smach.StateMachine.add('ITEMS2',
+                               TrackItems('Tracking Items'),
+                               transitions={'done':'STATUS2'})
+        smach.StateMachine.add('STATUS2',
+                               GetStatus('table2', 'Getting table status'),
+                               transitions={'done':'HOME'})
+        smach.StateMachine.add('HOME',
+                               Move(home, 'home'),
+                               transitions={'done':'VIEWHOME'})
         smach.StateMachine.add('VIEWHOME',
                                move_head_up('original position'),
                                transitions={'done':'GETSERVING'})

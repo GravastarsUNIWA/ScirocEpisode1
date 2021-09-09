@@ -8,7 +8,7 @@ import collections
 from std_msgs.msg import String
 import roslaunch
 from coordinates import Coordinates
-
+from PHASE_1 import Move
 
 class Wait(smach.State):
     def __init__(self, msg):
@@ -28,9 +28,6 @@ class SpawnOrder(smach.State):
 
         self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.order_callback)
 
-        self.item1 = 'sprite'
-        self.item2 = "cocacola"
-        self.item3 = "cocacola"
         rospy.sleep(1)        
 
     def get_name_of_table_order_callback(self,msg):
