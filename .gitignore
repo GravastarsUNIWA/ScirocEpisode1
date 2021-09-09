@@ -1,4 +1,3 @@
-
+*.pyc
 ros_yolov5/.vscode/
 
-*.pyc

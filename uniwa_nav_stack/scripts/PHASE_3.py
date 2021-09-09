@@ -8,19 +8,6 @@ import collections
 from std_msgs.msg import String
 
 
-# class Wait(smach.State):
-#     def __init__(self, msg):
-#         smach.State.__init__(self, outcomes=['done','skip'])
-#         self.msg = msg
-#
-#     def execute(self, userdata):
-#         print(self.msg + ":")
-#         result = raw_input()
-#         if result.lower() == 's' or result.lower() == 'skip':
-#             return 'skip'
-#         else:
-#             return 'done'
-
 class Wait(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
@@ -35,18 +22,23 @@ class SpawnOrder(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
+        self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
 
         self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.order_callback)
+        rospy.sleep(1)        
+
+    def get_name_of_table_order_callback(self,msg):
+        self.order_table_name = msg.data
 
     def order_callback(self, msg):
 
-        self.encoded_items = msg.data
-        print(json.loads(self.encoded_items))
-        # self.items = json.loads(self.encoded_items)["Order"]
+        encoded_items = msg.data
+        decoded_items = json.loads(encoded_items)
+        self.items = decoded_items[self.order_table_name]['Order']
 
-        # self.item1 = self.items[0]
-        # self.item2 = self.items[1]
-        # self.item3 = self.items[2]
+        self.item1 = str(self.items[0])
+        self.item2 = str(self.items[1])
+        self.item3 = str(self.items[2])
 
     def execute(self, userdata):
 
@@ -68,6 +60,8 @@ class ConfirmOrder(smach.State):
         self.items_on_paso = msg.data
 
     def execute(self, userdata):
+        # msg = rospy.wait_for_message(topic, topicType, timeout) (edited) 
+        # 
         if collections.Counter(self.items_on_order) == collections.Counter(self.items_on_paso):
             return 'correct'
         else:
@@ -105,12 +99,14 @@ class Pickuporder(smach.State):
         os.system('rosservice call /sciroc_object_manager/move_items_on_the_tray')
         return 'done'
 
-
 class Serve(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
+        # Create publisher tabletoorder
 
     def execute(self, userdata):
+
+        # move to tabletoorder and call service
         os.system('rosservice call /sciroc_object_manager/move_items_on_the_closest_table')
         return 'done'

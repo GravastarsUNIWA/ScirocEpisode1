@@ -41,7 +41,7 @@
 
   <group ns="$(arg namespace)">
 
-    <include file="$(find sciroc_ep1_object_manager)/launch/tiago_ep1.launch">
+    <!-- <include file="$(find sciroc_ep1_object_manager)/launch/tiago_ep1.launch">
       <arg name="world"      value="$(arg world)"/>
       <arg name="arm" value="$(arg arm)"/>
       <arg name="end_effector" value="$(arg end_effector)"/>
@@ -55,7 +55,7 @@
       <arg name="recording"  value="$(arg recording)"/>
       <arg name="extra_gazebo_args" value="$(arg extra_gazebo_args)"/>
       <arg if="$(eval local_planner == 'teb')" name="use_dynamic_footprint" value="true"/>
-    </include>
+    </include> -->
 
     <include file="$(find tiago_2dnav_gazebo)/launch/navigation.launch">
       <arg name="state"          value="localization"/>

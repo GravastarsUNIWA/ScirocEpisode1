@@ -25,11 +25,7 @@ class GetServingTables(smach.State):
 
         self.table_ready_pub = rospy.Publisher('/table_status/ready', Bool, queue_size=1)
         self.all_table_status_sub = rospy.Subscriber('/table_status/all_table_status', String, self.serving_callback)
-        
-        # self.table_status = json.dumps({
-        #     "table1": {"Items":False, "NoP": 2, "Status":"Serving" , "Order":[]},
-        #     "table2": {"Items":False, "NoP": 3, "Status":"Served" , "Order":[]}
-        #     })
+        self.get_name_of_table_order_pub = rospy.Publisher('/table_status/table_to_order',String, queue_size=1)
 
     def serving_callback(self, msg):
         encoded_all_table_status = msg.data
@@ -75,7 +71,9 @@ class GetServingTables(smach.State):
                                             Move(table, tableName), 
                                             transitions={'done':'finished'})
                 self.movetoOrder.execute()
+                self.get_name_of_table_order_pub.publish(tableName)
 
+            # Publisher for nlp_parser
             self.table_ready_pub.publish(True)
 
         return 'done'
