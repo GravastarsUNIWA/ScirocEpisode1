@@ -1,5 +1,4 @@
 <launch>
-
     <arg name="state" default="localization"/>
     <arg name="public_sim"   default="true"/>
 

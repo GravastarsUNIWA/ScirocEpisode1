@@ -1,0 +1,7 @@
+<launch>
+
+  <node name="tts_engine" pkg="waitbot" type="tts_engine.py" respawn="true" output="screen" />
+  <node name="vosk_sr" pkg="waitbot" type="vosk_sr.py" respawn="true" output="screen" />
+  <node name="nlp_parser" pkg="waitbot" type="nlp_parser2.py" respawn="true" output="screen" />
+
+</launch>
