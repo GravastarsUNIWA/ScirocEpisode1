@@ -64,6 +64,7 @@ class GetServingTables(smach.State):
                 tableName="table6"
 
 
+
             if table and tableName:
                 self.movetoOrder=smach.StateMachine(outcomes=['finished'])
                 with self.movetoOrder:
@@ -119,16 +120,4 @@ class GetSpeechOrder(smach.State):
 
         return 'done'
 
-
-
-# class GetSpeechOrder(smach.State):
-#     def __init__(self, msg):
-#         smach.State.__init__(self, outcomes=['done'])
-
-#     def execute(self, userdata):
-#         # self.nlp = NLP()
-
-#         os.system('roslaunch waitbot waitbot.launch')
-
-#         return 'done'
 

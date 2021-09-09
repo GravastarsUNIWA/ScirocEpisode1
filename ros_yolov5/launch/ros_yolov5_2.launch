@@ -2,7 +2,7 @@
     <node name="yolov5_object_detector" pkg="ros_yolov5" type="ros_yolov5.py" output="screen">
         
         <param name="yolo_path" value="$(find ros_yolov5)/yolov5" />
-        <param name="weights_path" value="$(find ros_yolov5)/weights/yolov5s.pt" />
+        <param name="weights_path" value="$(find ros_yolov5)/weights/counter_weights.pt" />
         <param name="detection_image_topic" value="/object_detection/image" />
         <param name="detection_counter_topic" value="/object_detection/counter" />
         <param name="detection_names_topic" value="/object_detection/names" />

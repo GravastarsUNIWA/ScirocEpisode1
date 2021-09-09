@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import json
 import os
 import cv2
@@ -11,6 +11,10 @@ import rospkg
 
 from std_msgs.msg import String, UInt8MultiArray
 from sensor_msgs.msg import Image
+from std_srvs.srv import Trigger, TriggerResponse
+
+from rospy.exceptions import ROSException
+
 # from ros_yolov5.msg import DetectedObject, DetectedObjectNames, DetectionCount, DetectionResult
 
 class ObjectDetector:
@@ -43,8 +47,8 @@ class ObjectDetector:
         img = img.reshape((msg.height, msg.width, 3))    
         
         # crop edges from 640x480 to 480x480
-        # if img.shape[0] != 480 or img.shape[1] != 640:
-        #     img = cv2.resize((640,480), img)
+        if img.shape[0] != 640 or img.shape[1] != 640:
+            img_out = cv2.resize(img, (640,640))
         # img = img[:,80:560,:]
         
         results = self.model(img, size=640)
@@ -66,10 +70,10 @@ class ObjectDetector:
 
                 conf = float(detection[4])
                 
-                # Add detection overlay to the image
-                cv2.rectangle(img,(startx,starty),(endx,endy),(255,0,0),2)
-                # cv2.putText(img,f'{names[cls]}: {conf:.2f}',(startx,starty-10),0,0.5,(255,0,0))
-                self.draw_text(img, f'{names[cls]}: {conf:.2f}', pos=(startx,starty-10))
+                # 640 detection overlay to the image
+                cv2.rectangle(img_out,(startx,starty),(endx,endy),(255,0,0),2)
+                # cv2.putText(img_out,f'{names[cls]}: {conf:.2f}',(startx,starty-10),0,0.5,(255,0,0))
+                self.draw_text(img_out, f'{names[cls]}: {conf:.2f}', pos=(startx,starty-10))
                 detection_name = names[cls]
                 detected_names.append(detection_name)
                 
@@ -97,15 +101,30 @@ class ObjectDetector:
         # rospy.loginfo(','.join(detected_coords))
 
 
-        img_msg = Image(height=480, width=480, encoding='rgb8', is_bigendian=0, step=1440, data=img.flatten().tobytes())
+        img_msg = Image(height=640, width=640, encoding='rgb8', is_bigendian=0, step=1920, data=img_out.flatten().tobytes())
         self.image_pub.publish(img_msg)
+
+    def service_callback(self, req):
+        rospy.loginfo('Waiting for image message...')
+        
+        try:
+            msg = rospy.wait_for_message(self.source_topic, Image, 5)
+
+            self.image_callback(msg)
+            resp = TriggerResponse(True, 'Image prediction successful')
+        except ROSException as e:
+            rospy.logwarn('Timed out while waiting for image message')
+            resp = TriggerResponse(False, 'Waiting image timeout')    
+            rospy.loginfo(e)        
+        return resp
 
     def __init__(self):
         rospy.init_node('yolov5_object_detector', anonymous=False)
 
         # If True a service is called for object detection
         as_a_service = rospy.get_param('~as_a_service', False)
-        
+        service_name = rospy.get_param('~service_name', 'predict_image')
+
         # YOLOV5 Parameters
         rospack = rospkg.RosPack()
         ROS_YOLOV5_PATH = rospack.get_path('ros_yolov5')
@@ -137,23 +156,31 @@ class ObjectDetector:
                                          String,
                                          queue_size=detection_queue)
 
-        # Parameters for subscription to camera for continuous recognition
-        source_topic = rospy.get_param('~source_topic', '/camera/rgb/image_raw')
-        source_queue = rospy.get_param('~source_queue', 1)
-        # Source image subscriber, buffer size increased from 65KB to 16MB for faster response
-        self.image_sub = rospy.Subscriber(source_topic, 
-                                          Image, 
-                                          callback=self.image_callback, 
-                                          queue_size=source_queue,
-                                          buff_size=2**24)
-
+        
+        self.source_topic = rospy.get_param('~source_topic', '/camera/rgb/image_raw')
+        
+        if as_a_service == False:
+            rospy.loginfo('Running predictions continuously')
+            # Parameters for subscription to camera for continuous recognition
+            source_queue = rospy.get_param('~source_queue', 1)
+            # Source image subscriber, buffer size increased from 65KB to 16MB for faster response
+            self.image_sub = rospy.Subscriber(self.source_topic, 
+                                            Image, 
+                                            callback=self.image_callback, 
+                                            queue_size=source_queue,
+                                            buff_size=2**24)
+        else:
+            rospy.loginfo('Running as a service')
+            self.image_service = rospy.Service(service_name, 
+                                               Trigger, 
+                                               self.service_callback)
 
         rospy.loginfo(f'Node {rospy.get_name()} initiated')
         rospy.loginfo(f'Started as a service: {as_a_service}')
         rospy.loginfo(f'Yolov5 path: {YOLO_PATH}')
         rospy.loginfo(f'Yolov5 weights path: {WEIGHTS_PATH}')
-        rospy.loginfo(f'Source img topic: {source_topic}')
-        rospy.loginfo(f'Annotated img topic: {source_topic}')
+        rospy.loginfo(f'Source img topic: {self.source_topic}')
+        rospy.loginfo(f'Annotated img topic: {detection_image_topic}')
         rospy.loginfo(f'Detection counter topic: {detection_counter_topic}')
         rospy.loginfo(f'Detection names topic: {detection_names_topic}')
         rospy.loginfo(f'Detection objects topic: {detection_objects_topic}')

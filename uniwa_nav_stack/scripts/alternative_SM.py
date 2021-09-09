@@ -9,7 +9,7 @@ from smach_ros import SimpleActionState, IntrospectionServer
 from smach import State, StateMachine
 from PHASE_1 import ShutDown, Move, CountPeople, TrackItems, AnnouncePhaseOne, GetStatus
 from PHASE_2 import GetServingTables, GetSpeechOrder
-from PHASE_3 import Wait, SpawnOrder, ConfirmOrder, CorrectOrder, Pickuporder, Serve
+from PHASE_3 import Wait, SpawnOrder, ConfirmOrder, CorrectOrder, Pickuporder, Serve, SpawnYolo, ServeItems
 from head import move_head_up, move_head_left1, move_head_left346, move_head_left2, move_head_left3
 from coordinates import Coordinates
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
@@ -186,16 +186,24 @@ def main():
                                 transitions={'done':'SPAWNORDER'})
         smach.StateMachine.add('SPAWNORDER',
                                 SpawnOrder('Spawning order...'),
+                                transitions={'done':'PICKUP'})
+        # smach.StateMachine.add('YOLOKILL',
+        #                         SpawnYolo('Respawning yolo'),
+        #                         transitions={'done':'WAIT'})
+        # smach.StateMachine.add('WAIT',
+        #                        Wait('resting'),
+        #                        transitions={'done':'CONFIRMORDER'})
+
+        smach.StateMachine.add('PICKUP',
+                               Pickuporder('Picking items'),
+                               transitions={'done':'SERVE'})
+        smach.StateMachine.add('SERVE',
+                               Serve('Serving'),
+                               transitions={'done':'SERVEITEMS'})
+        smach.StateMachine.add('SERVEITEMS',
+                                ServeItems('Serving table'),
                                 transitions={'done':'finished'})
-
-
-
-        # smach.StateMachine.add('PICKUP',
-        #                        Pickuporder('Picking items'),
-        #                        transitions={'done':'SERVE'})
-        # smach.StateMachine.add('SERVE',
-        #                        Serve('Serving'),
-        #                        transitions={'done':'finished'})
+        
     
 
     outcome = phase1.execute()
