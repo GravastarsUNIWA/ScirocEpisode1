@@ -197,3 +197,35 @@ class AnnouncePhaseThree(smach.State):
     def execute(self, userdata):
         pubPhrase.publish("Initiating Phase Three")
         return 'done'
+
+class Report(smach.State):
+
+    def __init__(self, msg):
+
+        smach.State.__init__(self, outcomes=['done'])
+        self.msg = msg
+        self.total_customers = rospy.Publisher('/total_customers_topic', String, queue_size=1)
+        self.all_table_status_sub = rospy.Subscriber('/table_status/all_table_status', String, self.all_table_status_callback)
+
+    def all_table_status_callback(self,msg):
+
+        self.all_table_status = json.loads(msg.data)
+
+    def execute(self, userdata):
+
+        self.sum = 0
+        for table in self.all_table_status:
+            self.sum += self.all_table_status[table]['NoP']
+        #print(self.sum)
+        try:
+
+            os.remove(os.path.expanduser('~')+"/table_report.txt")
+        except OSError:
+            pass
+
+        f = open(os.path.expanduser('~')+"/table_report.txt", "a")
+        f.write(str(self.all_table_status))
+        f.write("\n \n Total number of customers: " + str(self.sum))
+        f.close()
+
+        return 'done'

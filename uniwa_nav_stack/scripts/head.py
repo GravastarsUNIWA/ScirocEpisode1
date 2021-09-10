@@ -99,7 +99,7 @@ class move_head_left3(smach.State):
         jt = JointTrajectory()
         jt.joint_names = [self.name1, self.name2]
         jtp = JointTrajectoryPoint()
-        jtp.positions = [1.09, 0.05]
+        jtp.positions = [1.14, 0.05]
         jtp.time_from_start = rospy.Duration(2.0)
         jt.points.append(jtp)
         self.head_cmd.publish(jt)

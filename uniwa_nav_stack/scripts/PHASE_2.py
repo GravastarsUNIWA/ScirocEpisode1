@@ -64,6 +64,7 @@ class GetServingTables(smach.State):
                 tableName="table6"
 
 
+
             if table and tableName:
                 self.movetoOrder=smach.StateMachine(outcomes=['finished'])
                 with self.movetoOrder:
@@ -85,50 +86,24 @@ class GetSpeechOrder(smach.State):
         self.all_table_status_pub = rospy.Publisher('/table_status/all_table_status', String, queue_size=1)
         self.order_pub = rospy.Publisher('/table_status/ready', Bool, queue_size=1)
 
-        # adi gia auto ftiakse sub kai callback kai apo8hkeuse str st table_status
-        self.order_list = ["cocacola", "cocacola",'sprite']
-        # self.order_list = []
-
-
-
-    def order_list_callback(self, msg):
-        self.order_list = msg.data
-
     def serving_callback(self,msg):
-        self.table_status = msg.data
+        self.all_table_status = json.loads(msg.data)
 
     def execute(self, userdata):
 
-        # Anoikse to waitbot
+        # Wakeup waitbot
         self.order_pub.publish(True)
 
-        while self.order_list != True:
-            self.order_is_done_sub = rospy.Subscriber('/waitbot/orderList', String, self.order_list_callback)
-            
-            if len(self.order_list) >= 1:
-                break
+        order_list = rospy.wait_for_message('/waitbot/orderList', String)
+        print("Ordered items", order_list, type(order_list))
 
         # Get table to serve from 
-        temp = json.loads(self.table_status)
+        temp = self.all_table_status
         for table in temp:
             if temp[table]['Status']=="Serving":
                 tabletoOrder = str(table)
 
-        temp[tabletoOrder]["Order"]=(self.order_list) 
+        temp[tabletoOrder]["Order"]=(order_list.data) 
         self.all_table_status_pub.publish(json.dumps(temp))
 
         return 'done'
-
-
-
-# class GetSpeechOrder(smach.State):
-#     def __init__(self, msg):
-#         smach.State.__init__(self, outcomes=['done'])
-
-#     def execute(self, userdata):
-#         # self.nlp = NLP()
-
-#         os.system('roslaunch waitbot waitbot.launch')
-
-#         return 'done'
-

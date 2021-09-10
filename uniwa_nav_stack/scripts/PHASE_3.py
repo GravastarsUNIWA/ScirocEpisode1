@@ -6,7 +6,9 @@ import json
 import smach
 import collections
 from std_msgs.msg import String
-
+import roslaunch
+from coordinates import Coordinates
+from PHASE_1 import Move
 
 class Wait(smach.State):
     def __init__(self, msg):
@@ -15,7 +17,7 @@ class Wait(smach.State):
 
     def execute(self, userdata):
         # print('sleeping')
-        rospy.sleep(0.1)
+        rospy.sleep(0.5)
         return 'done'
 
 class SpawnOrder(smach.State):
@@ -23,26 +25,53 @@ class SpawnOrder(smach.State):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
         self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
+        self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.all_table_status_callback)
+        self.order_table_name = None
 
-        self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.order_callback)
-        rospy.sleep(1)        
 
     def get_name_of_table_order_callback(self,msg):
         self.order_table_name = msg.data
 
-    def order_callback(self, msg):
+    def all_table_status_callback(self, msg):
+        if self.order_table_name:
+            encoded_items = msg.data
+            decoded_items = json.loads(encoded_items)
+            items = json.loads(decoded_items[self.order_table_name]['Order'])
+            print(items, self.order_table_name)
 
-        encoded_items = msg.data
-        decoded_items = json.loads(encoded_items)
-        self.items = decoded_items[self.order_table_name]['Order']
-
-        self.item1 = str(self.items[0])
-        self.item2 = str(self.items[1])
-        self.item3 = str(self.items[2])
+            self.item1 = str(items[0])
+            self.item2 = str(items[1])
+            self.item3 = str(items[2])
 
     def execute(self, userdata):
 
         os.system('rosservice call /sciroc_object_manager/get_three_ordered_items %s %s %s' % (self.item1, self.item2, self.item3))
+        return 'done'
+
+class SpawnYolo(smach.State):
+    def __init__(self, msg):
+        smach.State.__init__(self, outcomes=['done'])
+        self.msg = msg
+
+    def execute(self, userdata):
+        os.system("rosnode kill /yolov5_object_detector")
+
+        #docker path
+        # w_path = "/home/user/ws/src/ScirocEpisode1/ros_yolov5/weights/plus_ultra.pt"
+
+        # native path
+        # w_path = "/home/paris/tiago_public_ws/src/ros_yolov5/weights/plus_ultra.pt"
+
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch.configure_logging(uuid)
+        cli_args = ['ros_yolov5', 'ros_yolov5_2.launch', 'weights_path:=/home/paris/tiago_public_ws/src/ros_yolov5/weights/plus_ultra.pt']
+        roslaunch_args = cli_args[1:]
+        roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
+
+
+        rospy.loginfo("YOLO 2 started")
+        launch = roslaunch.parent.ROSLaunchParent(uuid, roslaunch_file)
+        launch.start()
         return 'done'
 
 class ConfirmOrder(smach.State):
@@ -50,21 +79,38 @@ class ConfirmOrder(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['correct', 'false'])
         self.msg = msg
+        self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
+        self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.order_callback)
 
-        self.order_sub = rospy.Subscriber("/waitbot/table_manager/orderList", String, self.order_callback)
-        self.counter_sub = rospy.Subscriber("counter_items", string_array, self.counter_callback)
+        # self.yolo_sub = rospy.Subscriber('',String, self.order_callback)
+
+
+    def get_name_of_table_order_callback(self,msg):
+        self.order_table_name = msg.data
+
 
     def order_callback(self, msg):
-        self.items_on_order = json.loads(msg.data)
-    def counter_callback(self, msg):
-        self.items_on_paso = msg.data
+
+        encoded_items = msg.data
+        decoded_items = json.loads(encoded_items)
+        self.items_on_order = decoded_items[self.order_table_name]['Order']
+
 
     def execute(self, userdata):
+        topic = '/object_detection/counter'
+        msg = rospy.wait_for_message(topic, String)
+        print(msg, type(msg))
+
         # msg = rospy.wait_for_message(topic, topicType, timeout) (edited) 
         # 
+
         if collections.Counter(self.items_on_order) == collections.Counter(self.items_on_paso):
+            print(self.items_on_order, self.items_on_paso)
+            print(type(self.items_on_order), type(self.items_on_paso))
             return 'correct'
         else:
+            print(self.items_on_order, self.items_on_paso)
+            print(type(self.items_on_order), type(self.items_on_paso))
             return 'false'
 
 class CorrectOrder(smach.State):
@@ -72,7 +118,7 @@ class CorrectOrder(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
-        self.order_sub = rospy.Subscriber("/waitbot/table_manager/orderList", String, self.order_callback)
+        self.order_sub = rospy.Subscriber("/waitbot/orderList", String, self.order_callback)
         self.counter_sub = rospy.Subscriber("counter_items", string_array, self.counter_callback)
 
     def order_callback(self, msg):
@@ -103,10 +149,75 @@ class Serve(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
+        self.all_table_status_sub = rospy.Subscriber('/table_status/all_table_status', String, self.serving_callback)
+        self.all_table_status_pub = rospy.Publisher('/table_status/all_table_status', String, queue_size=1)
+        self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
+
+    def serving_callback(self, msg):
+        self.all_table_status = json.loads(msg.data)
+        
         # Create publisher tabletoorder
+    def get_name_of_table_order_callback(self,msg):
+            self.order_table_name = msg.data
+
+    def execute(self, userdata):
+        c = Coordinates()
+        c.init_location()
+        if self.order_table_name == "table1":
+                table = c.table1
+                tableName="table1"
+        elif self.order_table_name == "table2":
+            table = c.table2
+            tableName="table2"
+        elif self.order_table_name == "table3":
+            table = c.table3
+            tableName="table3"
+        elif self.order_table_name == "table4":
+            table = c.table4
+            tableName="table4"
+        elif self.order_table_name == "table5":
+            table = c.table5
+            tableName="table5"
+        elif self.order_table_name == "table6":
+            table = c.table6
+            tableName="table6"
+
+        self.movetoOrder=smach.StateMachine(outcomes=['finished'])
+        with self.movetoOrder:
+            smach.StateMachine.add('MOVETOTABLE',
+                                    Move(table, tableName), 
+                                    transitions={'done':'finished'})
+        self.movetoOrder.execute()
+
+        self.all_table_status[tableName]['Status'] = "Served"
+        self.all_table_status_pub.publish(json.dumps(self.all_table_status))
+
+        return 'done'
+
+class ServeItems(smach.State):
+    def __init__(self, msg):
+        smach.State.__init__(self, outcomes=['more', 'fin'])
+        self.msg = msg
+
+        self.all_table_status_sub = rospy.Subscriber('/table_status/all_table_status', String, self.serving_callback)
+
+
+    def serving_callback(self, msg):
+        self.encoded_all_table_status = msg.data
+        self.decoded_all_table_status = json.loads(self.encoded_all_table_status)
+        self.all_table_status = self.decoded_all_table_status
 
     def execute(self, userdata):
 
-        # move to tabletoorder and call service
         os.system('rosservice call /sciroc_object_manager/move_items_on_the_closest_table')
-        return 'done'
+
+        table_st = self.all_table_status
+        pt_counter = 0
+        for table in table_st:
+            if table_st[table]['Status'] == "Serving":
+                pt_counter += 1 
+
+        if pt_counter:
+            return 'more'
+
+        return 'fin'
