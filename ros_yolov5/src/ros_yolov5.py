@@ -40,7 +40,9 @@ class ObjectDetector:
     
         # Hack for getting image from image message without cvbridge
         img = np.frombuffer(msg.data, dtype=np.uint8)
-        img = img.reshape((msg.height, msg.width, 3))    
+        img = img.reshape((msg.height, msg.width, 3)) 
+        # img = img.reshape((msg.height, msg.width, 3))[:,:,::-1]
+
         
         # crop edges from 640x480 to 480x480
         # if img.shape[0] != 480 or img.shape[1] != 640:

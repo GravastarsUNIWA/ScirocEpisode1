@@ -32,7 +32,6 @@ def main():
     table6_walk = c.table6_walk
     rospy.init_node('smach_example_state_machine')
     pubPhrase = rospy.Publisher('waitbot/tts/phrase', String, queue_size=5)
-    print ("init")
 
 
 
@@ -176,24 +175,36 @@ def main():
 ##PHASE2##
 #=================================================================                             
         smach.StateMachine.add('GETSERVING',
-                                GetServingTables('get serving'),
+                                GetServingTables('GET TO SERVING TABLE'),
                                 transitions={'done':'SPEECH'})
         smach.StateMachine.add('SPEECH',
                                 GetSpeechOrder('INITIATE SPEECH'),
                                 transitions={'done':'PASO'})
+
+#=================================================================
+##PHASE3##
+#=================================================================
+
         smach.StateMachine.add('PASO',
                                 Move(paso),
                                 transitions={'done':'SPAWNORDER'})
+
+        # smach.StateMachine.add('YOLOKILL',
+        #                         SpawnYolo('Respawning yolo'),
+        #                         transitions={'done':'SPAWNORDER'})
+        # smach.StateMachine.add('CONFIRMORDER',
+        #                         ConfirmOrder('Confirming'),
+        #                         transitions={'correct':'PICKUP', 'false':'CORRECTORDER'})
+        # smach.StateMachine.add('CORRECTORDER',
+        #                         CorrectOrder('Correcting the order'),
+        #                         transitions={'done':'WRONGORDER'})
+        # smach.StateMachine.add('WRONGORDER',
+        #                         Wait('Please give the correct order'),
+        #                         transitions={'skip':'CONFIRMORDER', 'done':'CONFIRMORDER'})
+
         smach.StateMachine.add('SPAWNORDER',
                                 SpawnOrder('Spawning order...'),
                                 transitions={'done':'PICKUP'})
-        # smach.StateMachine.add('YOLOKILL',
-        #                         SpawnYolo('Respawning yolo'),
-        #                         transitions={'done':'WAIT'})
-        # smach.StateMachine.add('WAIT',
-        #                        Wait('resting'),
-        #                        transitions={'done':'CONFIRMORDER'})
-
         smach.StateMachine.add('PICKUP',
                                Pickuporder('Picking items'),
                                transitions={'done':'SERVE'})
@@ -202,58 +213,19 @@ def main():
                                transitions={'done':'SERVEITEMS'})
         smach.StateMachine.add('SERVEITEMS',
                                 ServeItems('Serving table'),
-                                transitions={'done':'finished'})
-        
+                                transitions={'more':'GETSERVING' , 'fin':'HOME'})
+        smach.StateMachine.add('HOME',
+                               Move(home, 'home'),
+                               transitions={'done':'finished'})
     
 
     outcome = phase1.execute()
 
 
-# #=================================================================
-# ##PHASE3##
-# #=================================================================
-#
-#     pubPhrase.publish('Initiating Phase 2')
-#
-#
-#     phase3 = smach.StateMachine(outcomes=['finished'])
-#
-#
-#     with phase3:
-#
-#
-#         smach.StateMachine.add('PASO',
-#                                 Move(paso),
-#                                 transitions={'done':'SPAWNORDER'})
-#         smach.StateMachine.add('SPAWNORDER',
-#                                 SpawnOrder('Spawning order...'),
-#                                 transitions={'done':'WAIT'})
-#         smach.StateMachine.add('WAIT',
-#                                 Wait('Please give the correct order'),
-#                                 transitions={'skip':'finished', 'done':'finished'})
-    #     smach.StateMachine.add('CONFIRMORDER',
-    #                             ConfirmOrder('Confirming'),
-    #                             transitions={'correct':'PICKUP', 'false':'CORRECTORDER'})
-    #     smach.StateMachine.add('CORRECTORDER',
-    #                             CorrectOrder('Correcting the order'),
-    #                             transitions={'done':'WRONGORDER'})
-    #     smach.StateMachine.add('WRONGORDER',
-    #                             Wait('Please give the correct order'),
-    #                             transitions={'skip':'CONFIRMORDER', 'done':'CONFIRMORDER'})
-    #     smach.StateMachine.add('PICKUP',
-    #                            Pickuporder('Picking items'),
-    #                            transitions={'done':'TABLE2'})
-    #     smach.StateMachine.add('TABLE2',
-    #                             Move(table2),
-    #                             transitions={'done':'SERVE'})
-    #     smach.StateMachine.add('SERVE',
-    #                            Serve('Serving'),
-    #                            transitions={'done':'finished'})
-    #
-    #outcome3 = phase3.execute()
 
 
-    #rospy.spin()
+   
+
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ class Wait(smach.State):
 
     def execute(self, userdata):
         # print('sleeping')
-        rospy.sleep(0.1)
+        rospy.sleep(0.5)
         return 'done'
 
 class SpawnOrder(smach.State):
@@ -25,25 +25,23 @@ class SpawnOrder(smach.State):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
         self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
+        self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.all_table_status_callback)
+        self.order_table_name = None
 
-        self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.order_callback)
-
-        rospy.sleep(1)        
 
     def get_name_of_table_order_callback(self,msg):
         self.order_table_name = msg.data
 
-    def order_callback(self, msg):
+    def all_table_status_callback(self, msg):
+        if self.order_table_name:
+            encoded_items = msg.data
+            decoded_items = json.loads(encoded_items)
+            items = json.loads(decoded_items[self.order_table_name]['Order'])
+            print(items, self.order_table_name)
 
-        encoded_items = msg.data
-        decoded_items = json.loads(encoded_items)
-        self.items = decoded_items[self.order_table_name]['Order']
-
-        self.item1 = str(self.items[0])
-        self.item2 = str(self.items[1])
-        self.item3 = str(self.items[2])
-
-
+            self.item1 = str(items[0])
+            self.item2 = str(items[1])
+            self.item3 = str(items[2])
 
     def execute(self, userdata):
 
@@ -55,21 +53,18 @@ class SpawnYolo(smach.State):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
 
-
-    
     def execute(self, userdata):
         os.system("rosnode kill /yolov5_object_detector")
-        rospy.sleep(1)
 
         #docker path
-        # w_path = "/home/user/ws/src/ScirocEpisode1/ros_yolov5/weights/counter_weights.pt"
+        # w_path = "/home/user/ws/src/ScirocEpisode1/ros_yolov5/weights/plus_ultra.pt"
 
         # native path
-        w_path = "/home/paris/tiago_public_ws/src/ros_yolov5/weights/counter_weights.pt"
+        # w_path = "/home/paris/tiago_public_ws/src/ros_yolov5/weights/plus_ultra.pt"
 
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         roslaunch.configure_logging(uuid)
-        cli_args = ['ros_yolov5', 'ros_yolov5_2.launch', 'weights_path:=/home/paris/tiago_public_ws/src/ros_yolov5/weights/counter_weights.pt']
+        cli_args = ['ros_yolov5', 'ros_yolov5_2.launch', 'weights_path:=/home/paris/tiago_public_ws/src/ros_yolov5/weights/plus_ultra.pt']
         roslaunch_args = cli_args[1:]
         roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
 
@@ -86,9 +81,7 @@ class ConfirmOrder(smach.State):
         self.msg = msg
         self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
         self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.order_callback)
-        
-        self.items_on_order = ['sprite','cocacola','cocacola']
-        rospy.sleep(1) 
+
         # self.yolo_sub = rospy.Subscriber('',String, self.order_callback)
 
 
@@ -125,7 +118,7 @@ class CorrectOrder(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
-        self.order_sub = rospy.Subscriber("/waitbot/table_manager/orderList", String, self.order_callback)
+        self.order_sub = rospy.Subscriber("/waitbot/orderList", String, self.order_callback)
         self.counter_sub = rospy.Subscriber("counter_items", string_array, self.counter_callback)
 
     def order_callback(self, msg):
@@ -156,7 +149,12 @@ class Serve(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
+        self.all_table_status_sub = rospy.Subscriber('/table_status/all_table_status', String, self.serving_callback)
+        self.all_table_status_pub = rospy.Publisher('/table_status/all_table_status', String, queue_size=1)
         self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
+
+    def serving_callback(self, msg):
+        self.all_table_status = json.loads(msg.data)
         
         # Create publisher tabletoorder
     def get_name_of_table_order_callback(self,msg):
@@ -191,15 +189,35 @@ class Serve(smach.State):
                                     transitions={'done':'finished'})
         self.movetoOrder.execute()
 
-        # move to tabletoorder and call service
+        self.all_table_status[tableName]['Status'] = "Served"
+        self.all_table_status_pub.publish(json.dumps(self.all_table_status))
+
         return 'done'
 
 class ServeItems(smach.State):
     def __init__(self, msg):
-        smach.State.__init__(self, outcomes=['done'])
+        smach.State.__init__(self, outcomes=['more', 'fin'])
         self.msg = msg
 
-    def execute(self, userdata):
-        os.system('rosservice call /sciroc_object_manager/move_items_on_the_closest_table')
-        return 'done'
+        self.all_table_status_sub = rospy.Subscriber('/table_status/all_table_status', String, self.serving_callback)
 
+
+    def serving_callback(self, msg):
+        self.encoded_all_table_status = msg.data
+        self.decoded_all_table_status = json.loads(self.encoded_all_table_status)
+        self.all_table_status = self.decoded_all_table_status
+
+    def execute(self, userdata):
+
+        os.system('rosservice call /sciroc_object_manager/move_items_on_the_closest_table')
+
+        table_st = self.all_table_status
+        pt_counter = 0
+        for table in table_st:
+            if table_st[table]['Status'] == "Serving":
+                pt_counter += 1 
+
+        if pt_counter:
+            return 'more'
+
+        return 'fin'
