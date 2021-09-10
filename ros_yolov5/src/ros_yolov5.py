@@ -40,12 +40,14 @@ class ObjectDetector:
     
         # Hack for getting image from image message without cvbridge
         img = np.frombuffer(msg.data, dtype=np.uint8)
-        img = img.reshape((msg.height, msg.width, 3))    
+        img = img.reshape((msg.height, msg.width, 3)) 
+        # img = img.reshape((msg.height, msg.width, 3))[:,:,::-1]
+
         
         # crop edges from 640x480 to 480x480
-        #if img.shape[0] != 480 or img.shape[1] != 640:
-            #img = cv2.resize((640,480), img)
-        #img = img[:,80:560,:]
+        # if img.shape[0] != 480 or img.shape[1] != 640:
+        #     img = cv2.resize((640,480), img)
+        # img = img[:,80:560,:]
         
         results = self.model(img, size=640)
 
@@ -139,7 +141,6 @@ class ObjectDetector:
 
         # Parameters for subscription to camera for continuous recognition
         source_topic = rospy.get_param('~source_topic', '/camera/rgb/image_raw')
-
         source_queue = rospy.get_param('~source_queue', 1)
         # Source image subscriber, buffer size increased from 65KB to 16MB for faster response
         self.image_sub = rospy.Subscriber(source_topic, 

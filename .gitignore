@@ -1,2 +1,6 @@
 
 ros_yolov5/.vscode/
+
+*.ipynb
+
+ros_yolov5/yolov5/.github/

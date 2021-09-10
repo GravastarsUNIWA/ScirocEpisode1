@@ -10,7 +10,9 @@
         <param name="source_topic" value="/xtion/rgb/image_raw" />
         <param name="source_queue" value="1" />
         <param name="as_a_service" value="false" />
-    </node>
+        <param name="service_name" value="object_detection/detect_object" />
 
+    </node>
     <node name="process_detections" type="process_detections.py" pkg="ros_yolov5"/>
+
 </launch>

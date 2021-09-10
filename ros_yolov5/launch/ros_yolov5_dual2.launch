@@ -1,0 +1,26 @@
+<launch>
+    <node name="yolov5_object_detector" pkg="ros_yolov5" type="ros_yolov5_service.py" output="screen">
+        <param name="yolo_path" value="$(find ros_yolov5)/yolov5" />
+        <param name="weights_path" value="$(find ros_yolov5)/weights/best.pt" />
+        <param name="detection_image_topic" value="/object_detection/image" />
+        <param name="detection_counter_topic" value="/object_detection/counter" />
+        <param name="detection_names_topic" value="/object_detection/names" />
+        <param name="detection_objects_topic" value="/object_detection/objects" />
+        <param name="source_topic" value="/xtion/rgb/image_raw" />
+        <param name="source_queue" value="1" />
+        <param name="as_a_service" value="true" />
+        <param name="service_name" value="object_detection/predict" />
+    </node>
+    <node name="yolov5_person_detector" pkg="ros_yolov5" type="ros_yolov5_coco.py" output="screen">
+        <param name="yolo_path" value="$(find ros_yolov5)/yolov5" />
+        <param name="weights_path" value="$(find ros_yolov5)/weights/yolov5s.pt" />
+        <param name="detection_image_topic" value="/person_detection/image" />
+        <param name="detection_counter_topic" value="/person_detection/counter" />
+        <param name="detection_names_topic" value="/person_detection/names" />
+        <param name="detection_objects_topic" value="/person_detection/objects" />
+        <param name="source_topic" value="/xtion/rgb/image_raw" />
+        <param name="source_queue" value="1" />
+        <param name="as_a_service" value="true" />
+        <param name="service_name" value="person_detection/predict" />
+    </node>
+</launch>

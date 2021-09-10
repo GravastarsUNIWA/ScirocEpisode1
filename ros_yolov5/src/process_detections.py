@@ -24,7 +24,9 @@ class process_detections:
 					'peroni',
 					'tea_box',
 					'estathe',
-					'cup']
+					'cup',
+					'wine',
+					'bottle']
 
 	def process_detections_callback(self, data):
 
