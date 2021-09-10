@@ -1,7 +1,2 @@
+
 *.pyc
-ros_yolov5/.vscode/
-
-
-ros_yolov5/.ipynb_checkpoints/ReadMe-checkpoint.ipynb
-
-*.ipynb

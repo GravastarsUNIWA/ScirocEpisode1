@@ -191,9 +191,6 @@ def main():
         smach.StateMachine.add('PASO',
                                 Move(paso, 'counter'),
                                 transitions={'done':'SPAWNORDER'})
-
-
-        
         smach.StateMachine.add('SPAWNORDER',
                                 SpawnOrder('Spawning order...'),
                                 transitions={'done':'PICKUP'})

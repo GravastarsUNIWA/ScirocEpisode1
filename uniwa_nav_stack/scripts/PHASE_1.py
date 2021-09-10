@@ -44,7 +44,6 @@ class Move(smach.State):
         client.wait_for_result(rospy.Duration.from_sec(1000.0))
 
     def execute(self, userdata):
-        os.system('rosservice call /move_base/clear_costmaps')
         pubPhrase.publish("Moving to {}".format(self.location_name))
         self.move(self.location, self.name)
         os.system('rosservice call /move_base/clear_costmaps')
@@ -143,29 +142,6 @@ class GetStatus(smach.State):
         self.encoded_all_table_status = json.dumps(self.all_table_status)
         self.all_table_status_pub.publish(self.encoded_all_table_status)
 
-        return 'done'
-
-class Report(smach.State):
-    def __init__(self, msg):
-        smach.State.__init__(self, outcomes=['done'])
-        self.msg = msg
-        self.total_customers = rospy.Publisher('/total_customers_topic', String, queue_size=1)
-
-    def execute(self, userdata):
-        global all_table_status
-        self.sum = 0
-        for table in all_table_status:
-            self.sum += all_table_status[table]['NoP']
-
-        try:
-            os.remove(os.path.expanduser('~')+"/table_report.txt")
-        except OSError:
-            pass
-
-        f = open(os.path.expanduser('~')+"/table_report.txt", "a")
-        f.write(str(all_table_status))
-        f.write("\n \n Total number of customers: " + str(self.sum))
-        f.close
         return 'done'
 
 class AnnouncePhaseOne(smach.State):

@@ -202,10 +202,10 @@ def main():
 
         smach.StateMachine.add('SPAWNORDER',
                                 SpawnOrder('Spawning order...'),
-                                transitions={'done':'YOLOKILL'})
-        smach.StateMachine.add('YOLOKILL',
-                                SpawnYolo('Respawning yolo'),
-                                transitions={'done':'CONFIRMORDER'})
+                                transitions={'done':'PICKUP'})
+        # smach.StateMachine.add('YOLOKILL',
+        #                         SpawnYolo('Respawning yolo'),
+        #                         transitions={'done':'CONFIRMORDER'})
         # smach.StateMachine.add('CONFIRMORDER',
         #                         ConfirmOrder('Confirming'),
         #                         transitions={'correct':'PICKUP', 'false':'PICKUP'})
