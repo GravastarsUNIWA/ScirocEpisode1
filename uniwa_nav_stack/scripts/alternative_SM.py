@@ -188,17 +188,23 @@ def main():
         smach.StateMachine.add('PASO',
                                 Move(paso),
                                 transitions={'done':'SPAWNORDER'})
+
         # smach.StateMachine.add('YOLOKILL',
         #                         SpawnYolo('Respawning yolo'),
         #                         transitions={'done':'SPAWNORDER'})
+        # smach.StateMachine.add('CONFIRMORDER',
+        #                         ConfirmOrder('Confirming'),
+        #                         transitions={'correct':'PICKUP', 'false':'CORRECTORDER'})
+        # smach.StateMachine.add('CORRECTORDER',
+        #                         CorrectOrder('Correcting the order'),
+        #                         transitions={'done':'WRONGORDER'})
+        # smach.StateMachine.add('WRONGORDER',
+        #                         Wait('Please give the correct order'),
+        #                         transitions={'skip':'CONFIRMORDER', 'done':'CONFIRMORDER'})
+
         smach.StateMachine.add('SPAWNORDER',
                                 SpawnOrder('Spawning order...'),
                                 transitions={'done':'PICKUP'})
-
-        # # smach.StateMachine.add('WAIT',
-        # #                        Wait('resting'),
-        # #                        transitions={'done':'CONFIRMORDER'})
-
         smach.StateMachine.add('PICKUP',
                                Pickuporder('Picking items'),
                                transitions={'done':'SERVE'})
@@ -207,8 +213,10 @@ def main():
                                transitions={'done':'SERVEITEMS'})
         smach.StateMachine.add('SERVEITEMS',
                                 ServeItems('Serving table'),
-                                transitions={'more':'GETSERVING' , 'fin':'finished'})
-        
+                                transitions={'more':'GETSERVING' , 'fin':'HOME'})
+        smach.StateMachine.add('HOME',
+                               Move(home, 'home'),
+                               transitions={'done':'finished'})
     
 
     outcome = phase1.execute()
@@ -216,16 +224,7 @@ def main():
 
 
 
-    #     smach.StateMachine.add('CONFIRMORDER',
-    #                             ConfirmOrder('Confirming'),
-    #                             transitions={'correct':'PICKUP', 'false':'CORRECTORDER'})
-    #     smach.StateMachine.add('CORRECTORDER',
-    #                             CorrectOrder('Correcting the order'),
-    #                             transitions={'done':'WRONGORDER'})
-    #     smach.StateMachine.add('WRONGORDER',
-    #                             Wait('Please give the correct order'),
-    #                             transitions={'skip':'CONFIRMORDER', 'done':'CONFIRMORDER'})
-
+   
 
 
 
