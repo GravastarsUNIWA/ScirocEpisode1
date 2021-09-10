@@ -213,8 +213,8 @@ def main():
                                transitions={'done':'SERVEITEMS'})
         smach.StateMachine.add('SERVEITEMS',
                                 ServeItems('Serving table'),
-                                transitions={'more':'GETSERVING' , 'fin':'HOME'})
-        smach.StateMachine.add('HOME',
+                                transitions={'more':'GETSERVING' , 'fin':'HOMELAST'})
+        smach.StateMachine.add('HOMELAST',
                                Move(home, 'home'),
                                transitions={'done':'finished'})
     
