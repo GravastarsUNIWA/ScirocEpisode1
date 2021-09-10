@@ -7,7 +7,7 @@ import smach
 import time
 from smach_ros import SimpleActionState, IntrospectionServer
 from smach import State, StateMachine
-from PHASE_1 import ShutDown, Move, CountPeople, TrackItems, AnnouncePhaseOne, GetStatus
+from PHASE_1 import ShutDown, Move, CountPeople, TrackItems, AnnouncePhaseOne, GetStatus, Report
 from PHASE_2 import GetServingTables, GetSpeechOrder
 from PHASE_3 import Wait, SpawnOrder, ConfirmOrder, CorrectOrder, Pickuporder, Serve, SpawnYolo, ServeItems
 from head import move_head_up, move_head_left1, move_head_left346, move_head_left2, move_head_left3
@@ -169,6 +169,9 @@ def main():
                                transitions={'done':'VIEWHOME'})
         smach.StateMachine.add('VIEWHOME',
                                move_head_up('original position'),
+                               transitions={'done':'REPORT'})
+        smach.StateMachine.add('REPORT',
+                               Report('REPORT'),
                                transitions={'done':'GETSERVING'})
 
 #=================================================================
@@ -186,25 +189,23 @@ def main():
 #=================================================================
 
         smach.StateMachine.add('PASO',
-                                Move(paso),
+                                Move(paso, 'counter'),
                                 transitions={'done':'SPAWNORDER'})
 
+
+        
+        smach.StateMachine.add('SPAWNORDER',
+                                SpawnOrder('Spawning order...'),
+                                transitions={'done':'PICKUP'})
         # smach.StateMachine.add('YOLOKILL',
         #                         SpawnYolo('Respawning yolo'),
-        #                         transitions={'done':'SPAWNORDER'})
+        #                         transitions={'done':'CONFIRMORDER'})
         # smach.StateMachine.add('CONFIRMORDER',
         #                         ConfirmOrder('Confirming'),
         #                         transitions={'correct':'PICKUP', 'false':'CORRECTORDER'})
         # smach.StateMachine.add('CORRECTORDER',
         #                         CorrectOrder('Correcting the order'),
-        #                         transitions={'done':'WRONGORDER'})
-        # smach.StateMachine.add('WRONGORDER',
-        #                         Wait('Please give the correct order'),
-        #                         transitions={'skip':'CONFIRMORDER', 'done':'CONFIRMORDER'})
-
-        smach.StateMachine.add('SPAWNORDER',
-                                SpawnOrder('Spawning order...'),
-                                transitions={'done':'PICKUP'})
+        #                         transitions={'done':'PICKUP'})
         smach.StateMachine.add('PICKUP',
                                Pickuporder('Picking items'),
                                transitions={'done':'SERVE'})
@@ -217,7 +218,6 @@ def main():
         smach.StateMachine.add('HOMELAST',
                                Move(home, 'home'),
                                transitions={'done':'finished'})
-    
 
     outcome = phase1.execute()
 

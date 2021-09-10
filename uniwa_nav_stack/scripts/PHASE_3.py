@@ -37,7 +37,6 @@ class SpawnOrder(smach.State):
             encoded_items = msg.data
             decoded_items = json.loads(encoded_items)
             items = json.loads(decoded_items[self.order_table_name]['Order'])
-            print(items, self.order_table_name)
 
             self.item1 = str(items[0])
             self.item2 = str(items[1])
@@ -69,7 +68,7 @@ class SpawnYolo(smach.State):
         roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
 
 
-        rospy.loginfo("YOLO 2 started")
+        rospy.loginfo("YOLO PLUS ULTRA started")
         launch = roslaunch.parent.ROSLaunchParent(uuid, roslaunch_file)
         launch.start()
         return 'done'
@@ -79,10 +78,9 @@ class ConfirmOrder(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['correct', 'false'])
         self.msg = msg
+        self.order_table_name = None
         self.get_name_of_table_order_sub = rospy.Subscriber("/table_status/table_to_order",String, self.get_name_of_table_order_callback)
         self.order_sub = rospy.Subscriber("/table_status/all_table_status", String, self.order_callback)
-
-        # self.yolo_sub = rospy.Subscriber('',String, self.order_callback)
 
 
     def get_name_of_table_order_callback(self,msg):
@@ -90,27 +88,40 @@ class ConfirmOrder(smach.State):
 
 
     def order_callback(self, msg):
-
-        encoded_items = msg.data
-        decoded_items = json.loads(encoded_items)
-        self.items_on_order = decoded_items[self.order_table_name]['Order']
+        if self.order_table_name:
+            encoded_items = msg.data
+            decoded_items = json.loads(encoded_items)
+            self.items_on_order = str(decoded_items[self.order_table_name]['Order'])
+            print("PEOS ",self.items_on_order, type(self.items_on_order))
 
 
     def execute(self, userdata):
-        topic = '/object_detection/counter'
+        topic = '/object_detection/objects'
         msg = rospy.wait_for_message(topic, String)
-        print(msg, type(msg))
+        # print(msg, type(msg))
+        items_on_paso = json.loads(msg.data)
+        print("peos2 ",items_on_paso, type(items_on_paso))
 
-        # msg = rospy.wait_for_message(topic, topicType, timeout) (edited) 
-        # 
 
-        if collections.Counter(self.items_on_order) == collections.Counter(self.items_on_paso):
-            print(self.items_on_order, self.items_on_paso)
-            print(type(self.items_on_order), type(self.items_on_paso))
+        if len(items_on_paso) >=2:
+            items_on_paso = [items_on_paso[0][-1], items_on_paso()[1][-1], items_on_paso()[2][-1]]
+
+
+        if len(items_on_paso<2):
+            return 'correct'
+
+        
+        # print(items_on_paso, type(items_on_paso))
+
+        if collections.Counter(self.items_on_order) == collections.Counter(items_on_paso):
+            # print(self.items_on_order, items_on_paso)
+            # print(type(self.items_on_order), type(items_on_paso))
+            print("CORRECT")
             return 'correct'
         else:
-            print(self.items_on_order, self.items_on_paso)
-            print(type(self.items_on_order), type(self.items_on_paso))
+            # print(self.items_on_order, items_on_paso)
+            # print(type(self.items_on_order), type(items_on_paso))
+            print("FALSE")
             return 'false'
 
 class CorrectOrder(smach.State):
@@ -119,20 +130,24 @@ class CorrectOrder(smach.State):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
         self.order_sub = rospy.Subscriber("/waitbot/orderList", String, self.order_callback)
-        self.counter_sub = rospy.Subscriber("counter_items", string_array, self.counter_callback)
+
 
     def order_callback(self, msg):
         self.items_on_order = json.loads(msg.data)
-    def counter_callback(self, msg):
-        self.items_on_paso = msg.data
+
 
     def execute(self, userdata):
-        self.wrong_item = collections.Counter(self.items_on_paso) - collections.Counter(self.items_on_order)
+        topic = '/object_detection/objects'
+        msg = rospy.wait_for_message(topic, String)
+        itms = json.loads(msg.data)
+        items_on_paso = [itms[0][-1], itms()[1][-1], itms()[2][-1]]
+
+        self.wrong_item = collections.Counter(items_on_paso) - collections.Counter(self.items_on_order)
         self.wrong_item = self.wrong_item.keys()
-        self.wrong_item_num = (collections.Counter(self.items_on_paso) - collections.Counter(self.items_on_order)).items()[0][1]
-        self.correct_item = collections.Counter(self.items_on_order) - collections.Counter(self.items_on_paso)
+        self.wrong_item_num = (collections.Counter(items_on_paso) - collections.Counter(self.items_on_order)).items()[0][1]
+        self.correct_item = collections.Counter(self.items_on_order) - collections.Counter(items_on_paso)
         self.correct_item = self.correct_item.keys()
-        self.correct_item_num = (collections.Counter(self.items_on_order) - collections.Counter(self.items_on_paso)).items()[0][1]
+        self.correct_item_num = (collections.Counter(self.items_on_order) - collections.Counter(items_on_paso)).items()[0][1]
         os.system('rosservice call /sciroc_object_manager/change_the_item %s %s' % (self.wrong_item[0], self.correct_item[0]))
         return 'done'
 

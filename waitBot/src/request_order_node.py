@@ -12,11 +12,16 @@ items = ['cocacola',
          'sprite',
          'fanta',
          'estathe',
-         'bifrutas',
          'beer',
          'pringles1',
          'pringles2',
-         'biscuits'
+         'bifrutas_tropical_can',
+         'biscuits_pack',
+         'cup_glass_new',
+         'cup_paper',
+         'peroni',
+         'plastic_cup',
+         'tea_box'
         ]
 
 banner = """

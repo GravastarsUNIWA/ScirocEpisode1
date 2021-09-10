@@ -157,8 +157,6 @@ class Report(smach.State):
         for table in all_table_status:
             self.sum += all_table_status[table]['NoP']
 
-        print(self.sum)
-
         try:
             os.remove(os.path.expanduser('~')+"/table_report.txt")
         except OSError:
@@ -168,7 +166,6 @@ class Report(smach.State):
         f.write(str(all_table_status))
         f.write("\n \n Total number of customers: " + str(self.sum))
         f.close
-        print("done")
         return 'done'
 
 class AnnouncePhaseOne(smach.State):
@@ -216,7 +213,6 @@ class Report(smach.State):
         self.sum = 0
         for table in self.all_table_status:
             self.sum += self.all_table_status[table]['NoP']
-        #print(self.sum)
         try:
 
             os.remove(os.path.expanduser('~')+"/table_report.txt")

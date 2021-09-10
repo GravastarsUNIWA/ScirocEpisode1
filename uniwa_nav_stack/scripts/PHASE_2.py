@@ -95,7 +95,7 @@ class GetSpeechOrder(smach.State):
         self.order_pub.publish(True)
 
         order_list = rospy.wait_for_message('/waitbot/orderList', String)
-        print("Ordered items", order_list, type(order_list))
+        # print("Ordered items", order_list, type(order_list))
 
         # Get table to serve from 
         temp = self.all_table_status
