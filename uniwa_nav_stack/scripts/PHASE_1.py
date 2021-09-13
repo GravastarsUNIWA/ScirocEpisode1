@@ -191,13 +191,15 @@ class Report(smach.State):
             self.sum += self.all_table_status[table]['NoP']
         try:
 
-            os.remove(os.path.expanduser('~')+"/table_report.txt")
+            os.remove(os.path.expanduser('~')+"/table_report.json")
         except OSError:
             pass
 
-        f = open(os.path.expanduser('~')+"/table_report.txt", "a")
-        f.write(str(self.all_table_status))
-        f.write("\n \n Total number of customers: " + str(self.sum))
-        f.close()
+        report = dict()
+        report['table_status'] = self.all_table_status
+        report['total_number_of_customes'] = self.sum
+        
+        with open(os.path.expanduser('~')+"/table_report.json", "w") as f:
+            f.write(json.jumps(report, indet))
 
         return 'done'
