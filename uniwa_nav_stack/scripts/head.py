@@ -7,7 +7,6 @@ import smach
 import time
 
 
-
 #
 # class move_head_down(smach.State):
 #     def __init__(self, msg):
@@ -41,7 +40,9 @@ class move_head_up(smach.State):
         self.msg = msg
         self.name1 = 'head_1_joint'
         self.name2 = 'head_2_joint'
-        self.head_cmd = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=1)
+        self.head_cmd = rospy.Publisher(
+            '/head_controller/command', JointTrajectory, queue_size=1)
+
     def moveup(self):
         jt = JointTrajectory()
         jt.joint_names = [self.name1, self.name2]
@@ -50,6 +51,7 @@ class move_head_up(smach.State):
         jtp.time_from_start = rospy.Duration(2.0)
         jt.points.append(jtp)
         self.head_cmd.publish(jt)
+
     def execute(self, userdata):
         start_time = time.time()
         seconds = 5
@@ -94,7 +96,9 @@ class move_head_left3(smach.State):
         self.msg = msg
         self.name1 = 'head_1_joint'
         self.name2 = 'head_2_joint'
-        self.head_cmd = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=1)
+        self.head_cmd = rospy.Publisher(
+            '/head_controller/command', JointTrajectory, queue_size=1)
+
     def moveleft(self):
         jt = JointTrajectory()
         jt.joint_names = [self.name1, self.name2]
@@ -103,6 +107,7 @@ class move_head_left3(smach.State):
         jtp.time_from_start = rospy.Duration(2.0)
         jt.points.append(jtp)
         self.head_cmd.publish(jt)
+
     def execute(self, userdata):
         start_time = time.time()
         seconds = 10
@@ -114,13 +119,16 @@ class move_head_left3(smach.State):
                 break
         return 'done'
 
+
 class move_head_left1(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
         self.name1 = 'head_1_joint'
         self.name2 = 'head_2_joint'
-        self.head_cmd = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=1)
+        self.head_cmd = rospy.Publisher(
+            '/head_controller/command', JointTrajectory, queue_size=1)
+
     def moveleft(self):
         jt = JointTrajectory()
         jt.joint_names = [self.name1, self.name2]
@@ -129,6 +137,7 @@ class move_head_left1(smach.State):
         jtp.time_from_start = rospy.Duration(2.0)
         jt.points.append(jtp)
         self.head_cmd.publish(jt)
+
     def execute(self, userdata):
         start_time = time.time()
         seconds = 10
@@ -139,6 +148,7 @@ class move_head_left1(smach.State):
             if elapsed_time > seconds:
                 break
         return 'done'
+
 
 class move_head_left346(smach.State):
     def __init__(self, msg):
@@ -146,15 +156,18 @@ class move_head_left346(smach.State):
         self.msg = msg
         self.name1 = 'head_1_joint'
         self.name2 = 'head_2_joint'
-        self.head_cmd = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=1)
+        self.head_cmd = rospy.Publisher(
+            '/head_controller/command', JointTrajectory, queue_size=1)
+
     def moveleft(self):
         jt = JointTrajectory()
         jt.joint_names = [self.name1, self.name2]
         jtp = JointTrajectoryPoint()
-        jtp.positions = [1.5, 0.05]  #1.5, 0.1
+        jtp.positions = [1.5, 0.05]  # 1.5, 0.1
         jtp.time_from_start = rospy.Duration(2.0)
         jt.points.append(jtp)
         self.head_cmd.publish(jt)
+
     def execute(self, userdata):
         start_time = time.time()
         seconds = 10
@@ -166,13 +179,16 @@ class move_head_left346(smach.State):
                 break
         return 'done'
 
+
 class move_head_left2(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
         self.name1 = 'head_1_joint'
         self.name2 = 'head_2_joint'
-        self.head_cmd = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=1)
+        self.head_cmd = rospy.Publisher(
+            '/head_controller/command', JointTrajectory, queue_size=1)
+
     def moveleft(self):
         jt = JointTrajectory()
         jt.joint_names = [self.name1, self.name2]
@@ -181,6 +197,7 @@ class move_head_left2(smach.State):
         jtp.time_from_start = rospy.Duration(2.0)
         jt.points.append(jtp)
         self.head_cmd.publish(jt)
+
     def execute(self, userdata):
         start_time = time.time()
         seconds = 10
@@ -192,13 +209,16 @@ class move_head_left2(smach.State):
                 break
         return 'done'
 
+
 class move_head_centre(smach.State):
     def __init__(self, msg):
         smach.State.__init__(self, outcomes=['done'])
         self.msg = msg
         self.name1 = 'head_1_joint'
         self.name2 = 'head_2_joint'
-        self.head_cmd = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=1)
+        self.head_cmd = rospy.Publisher(
+            '/head_controller/command', JointTrajectory, queue_size=1)
+
     def movecentre(self):
         jt = JointTrajectory()
         jt.joint_names = [self.name1, self.name2]
@@ -207,6 +227,7 @@ class move_head_centre(smach.State):
         jtp.time_from_start = rospy.Duration(2.0)
         jt.points.append(jtp)
         self.head_cmd.publish(jt)
+
     def execute(self, userdata):
         start_time = time.time()
         seconds = 5
@@ -221,7 +242,8 @@ class move_head_centre(smach.State):
 
 class MOVE_HEAD(object):
     def __init__(self):
-        self.head_cmd = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=1)
+        self.head_cmd = rospy.Publisher(
+            '/head_controller/command', JointTrajectory, queue_size=1)
         self.name1 = 'head_1_joint'
         self.name2 = 'head_2_joint'
 
@@ -269,6 +291,8 @@ class MOVE_HEAD(object):
         self.jtp.time_from_start = rospy.Duration(2.0)
         self.jt.points.append(self.jtp)
         self.head_cmd.publish(self.jt)
+
+
 #
 #
 if __name__ == '__main__':

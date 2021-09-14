@@ -14,7 +14,8 @@ class Fix(object):
         self.done = rospy.is_shutdown()
         self.start_time = time.time()
         self.an_speed = -0.5
-        self.pub = rospy.Publisher('/mobile_base_controller/cmd_vel', Twist, queue_size=1)
+        self.pub = rospy.Publisher(
+            '/mobile_base_controller/cmd_vel', Twist, queue_size=1)
 
     def rotation(self):
         self.rot = Twist()
@@ -37,10 +38,11 @@ class Fix(object):
                 os.system('rosservice call /move_base/clear_costmaps')
                 self.done = True
 
+
 if __name__ == '__main__':
-  try:
-    rospy.init_node('peristrepsou')
-    f = Fix()
-    f.run()
-  except rospy.ROSInterruptException:
-    rospy.loginfo("Test is complete")
+    try:
+        rospy.init_node('peristrepsou')
+        f = Fix()
+        f.run()
+    except rospy.ROSInterruptException:
+        rospy.loginfo("Test is complete")

@@ -4,7 +4,6 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, PointStamp
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 
-
 class Coordinates():
     def __init__(self):
         self.home = PoseStamped()
@@ -76,7 +75,6 @@ class Coordinates():
         self.table2.pose.position.y = 0.23424823733
         self.table2.pose.orientation.z = -0.755741129305
         self.table2.pose.orientation.w = 0.654870479925
-
 
         self.table3.header.frame_id = "map"
         self.table3.pose.position.x = 4.12079896376
