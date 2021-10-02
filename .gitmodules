@@ -1,0 +1,3 @@
+[submodule "Sciroc2EP1-SimulatedEnv"]
+	path = Sciroc2EP1-SimulatedEnv
+	url = https://github.com/vincenzosu/Sciroc2EP1-SimulatedEnv
