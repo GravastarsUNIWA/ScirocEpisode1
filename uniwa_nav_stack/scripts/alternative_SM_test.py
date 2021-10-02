@@ -54,27 +54,7 @@ def main():
                                transitions={'done': 'STATUS3'})
         smach.StateMachine.add('STATUS3',
                                GetStatus('table3', 'Getting table status'),
-                               transitions={'done': 'VIEW4'})  # VIEW5
-
-        smach.StateMachine.add('VIEW4',
-                               move_head_left346('rotate head'),
-                               transitions={'done': 'TABLE4'})
-        smach.StateMachine.add('TABLE4',
-                               Move(table4_walk, 'table4'),
-                               transitions={'done': 'WAIT4'})
-        smach.StateMachine.add('WAIT4',
-                               Wait('resting'),
-                               transitions={'done': 'PEOPLE4'})
-        smach.StateMachine.add('PEOPLE4',
-                               CountPeople('Counting People'),
-                               transitions={'done': 'ITEMS4'})
-        smach.StateMachine.add('ITEMS4',
-                               TrackItems('Tracking Items'),
-                               transitions={'done': 'STATUS4'})
-        smach.StateMachine.add('STATUS4',
-                               GetStatus('table4', 'Getting table status'),
                                transitions={'done': 'VIEWHOME'})
-
         smach.StateMachine.add('VIEWHOME',
                                move_head_up('original position'),
                                transitions={'done': 'REPORT'})

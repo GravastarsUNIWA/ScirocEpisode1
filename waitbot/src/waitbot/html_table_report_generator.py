@@ -1,3 +1,4 @@
+
 import os
 import json
 
@@ -6,15 +7,17 @@ from bs4 import BeautifulSoup
 
 class HtmlTableReportGenerator:
     @staticmethod
-    def generate_report(src='/home/paris/table_report.json', dst='/home/paris/table_report.html', template='/home/paris/tiago_public_ws/src/ScirocEpisode1/table_report/static_report.html'):
+    def generate_report(src=os.path.expanduser('~')+"/table_report.json",
+                        dst=os.path.expanduser('~')+'/table_report.html',
+                        template=os.path.expanduser('~')+'/tiago_public_ws/src/ScirocEpisode1/table_report/static_report.html'):
 
         print('Generating HTML report...')
 
-        print(f'Reading template {template}...')
+        print('Reading template {}...'.format(template))
         with open(template, 'r') as f:
             soup = BeautifulSoup(f, 'html.parser')
 
-        print(f'Reading source report {src}...')
+        print('Reading source report {}...'.format(src))
         with open(src, 'r') as f:
             status_dict = json.load(f)
 
@@ -25,33 +28,34 @@ class HtmlTableReportGenerator:
         for name, table_status in status_dict['table_status'].items():
             print(name, table_status)
             table_status_body.append(BeautifulSoup(
-                f'''
+                '''
                 <div class="col-md-6 mb-3">
                             <div class="card">
                                 <div class="card-body">
-                                    <h3 class="card-title bg-blue-600 text-white p-2">{name}</h3>                
+                                    <h3 class="card-title bg-blue-600 text-white p-2">{}</h3>                
                                     <ul class="card-text list-group list-group-flush">
                                         <li class="list-group-item">
-                                            <b>Status: </b>{table_status['Status']}
+                                            <b>Status: </b>{}
                                         </li>
                                         <li class="list-group-item">
-                                            <b>Number of people: </b>{table_status['NoP']}
+                                            <b>Number of people: </b>{}
                                         </li>
                                         <li class="list-group-item">
-                                            <b>Items on table: </b>{table_status['Items']}
+                                            <b>Items on table: </b>{}
                                         </li>
                                         <li class="list-group-item">
-                                            <b>Order: </b>{','.join(table_status.get('Order', []))}
+                                            <b>Order: </b>{}
                                         </li>
                                     </ul>
                                 </div>
                             <div>
                         </div>
-                ''', 'html.parser'))
+                '''.format(name, table_status['Status'], table_status['NoP'],
+                           table_status['Items'], ','.join(table_status.get('Order', []))), 'html.parser'))
 
         with open(dst, 'w') as f:
             f.write(str(soup))
-        print(f'HTML report generated at: {dst}')
+        print('HTML report generated at: {}'.format(dst))
 
 
 # This part does not run if script is imported

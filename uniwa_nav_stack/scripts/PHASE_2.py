@@ -109,25 +109,24 @@ class GetSpeechOrder(smach.State):
         # Wakeup waitbot
         self.order_pub.publish(True)
 
-        # Start text based ordering
-        text_order = req_order()
-        ordered = text_order.main()
-
-        while ordered:
+        # # Start text based ordering
+        # text_order = req_order()
+        # ordered = text_order.main()
+        order_list = []
+        while True:
             try:
                 order_list = rospy.wait_for_message(
                     '/waitbot/orderList', String, timeout=10)
+                if order_list:
+                    # Get table to serve from
+                    temp = self.all_table_status
+                    for table in temp:
+                        if temp[table]['Status'] == "Serving":
+                            tabletoOrder = str(table)
+
+                    temp[tabletoOrder]["Order"] = (order_list.data)
+                    self.all_table_status_pub.publish(json.dumps(temp))
+
+                    return 'done'
             except:
                 pass
-
-            if order_list:
-                # Get table to serve from
-                temp = self.all_table_status
-                for table in temp:
-                    if temp[table]['Status'] == "Serving":
-                        tabletoOrder = str(table)
-
-                temp[tabletoOrder]["Order"] = (order_list.data)
-                self.all_table_status_pub.publish(json.dumps(temp))
-
-                return 'done'

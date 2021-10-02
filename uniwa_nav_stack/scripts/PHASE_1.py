@@ -10,6 +10,7 @@ from std_msgs.msg import String, Bool
 import json
 import time
 from trajectory_msgs.msg import JointTrajectory
+from waitbot.html_table_report_generator import HtmlTableReportGenerator
 
 pubPhrase = rospy.Publisher('waitbot/tts/phrase', String, queue_size=5)
 
@@ -221,4 +222,5 @@ class Report(smach.State):
         with open(os.path.expanduser('~')+"/table_report.json", "w") as f:
             f.write(json.dumps(report))
 
+        HtmlTableReportGenerator().generate_report()
         return 'done'
