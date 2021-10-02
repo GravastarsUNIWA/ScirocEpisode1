@@ -1,0 +1,33 @@
+{
+    "table_status": {
+        "Table1": {
+            "items": false,
+            "NoP": 2,
+            "Status": "Serving",
+            "Order": []
+        },
+        "Table2": {
+            "items": false,
+            "NoP": 1,
+            "Status": "Serving",
+            "Order": []
+        },
+        "Table3": {
+            "items": false,
+            "NoP": 3,
+            "Status": "Served",
+            "Order": [
+                "beer",
+                "fanta",
+                "cocacola"
+            ]
+        },
+        "Table4": {
+            "items": true,
+            "NoP": 0,
+            "Status": "Cleaning",
+            "Order": []
+        }
+    },
+    "total_number_of_customes": 6
+}
