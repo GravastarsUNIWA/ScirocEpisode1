@@ -25,7 +25,7 @@ In this episode the robot will assist the staff of a coffee shop to take care of
 
   `mkdir ~/tiago_public_ws && cd ~/tiago_public_ws`
   
-### 2. Download [tiago_public.rosinstall](https://raw.githubusercontent.com/pal-robotics/tiago_tutorials/kinetic-devel/tiago_public.rosinstall) (right-click and save link as...) and put it inside the workspace created before.
+### 2. Download [tiago_public.rosinstall](https://raw.githubusercontent.com/pal-robotics/tiago_tutorials/kinetic-devel/tiago_public-melodic.rosinstall) (right-click and save link as...) and put it inside the workspace created before.
 
 ### 3. With this command, every needed repo is downloaded inside a src folder.
 
