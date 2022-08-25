@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/home/paris/miniconda3/envs/venv/bin/python
+
 import json
 import os
 import cv2
@@ -99,7 +100,7 @@ class ObjectDetector:
         # rospy.loginfo(','.join(detected_coords))
 
 
-        img_msg = Image(height=480, width=480, encoding='rgb8', is_bigendian=0, step=1440, data=img.flatten().tobytes())
+        img_msg = Image(height=480, width=640, encoding='rgb8', is_bigendian=0, step=1920, data=img.flatten().tobytes())
         self.image_pub.publish(img_msg)
 
     def __init__(self):
